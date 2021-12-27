@@ -146,29 +146,7 @@
         },
       };
     },
-    mounted() {
-      let _this = this;
-      _this.windowOnResize();
-
-      this.$nextTick(function () {
-        window.onresize = function () {
-          _this.windowOnResize();
-        };
-      });
-    },
     methods: {
-      windowOnResize() {
-        const w = window,
-          d = document,
-          documentElement = d.documentElement,
-          body = d.getElementsByTagName("body")[0],
-          width =
-            w.innerWidth || documentElement.clientWidth || body.clientWidth,
-          height =
-            w.innerHeight || documentElement.clientHeight || body.clientHeight;
-
-        this.$store.commit(MOTATION_TYPES.WINDOWS_ON_RESIZE, { width, height });
-      },
       onSubmit() {
         // const router = useRouter();
         const _this = this;
@@ -178,7 +156,7 @@
             _this.$store.dispatch(MOTATION_TYPES.LOGIN_FORM_SUBMIT, res);
 
             // 路由跳转
-            _this.$router.push("home");
+            _this.$router.push(CONSTANT_DATA.PAGE_LISTS.DASHBOARD);
           })
           .catch(({ errorFields }) => {
             if (errorFields && errorFields.length > 0) {

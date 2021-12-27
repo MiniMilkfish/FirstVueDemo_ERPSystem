@@ -40,6 +40,7 @@
   import vAppLeftMenu from "./components/vAppLeftMenu.vue";
   import vAppBreadCrumb from "./components/vAppBreadcrumb.vue";
   import FAKE_DATE from "./utils/fakeDate";
+  import MOTATION_TYPES from "./store/constantMotationTypes";
 
   export default {
     name: "App",
@@ -64,6 +65,18 @@
       titleClick(e) {
         console.log("titleClick", e);
       },
+      windowOnResize() {
+        const w = window,
+          d = document,
+          documentElement = d.documentElement,
+          body = d.getElementsByTagName("body")[0],
+          width =
+            w.innerWidth || documentElement.clientWidth || body.clientWidth,
+          height =
+            w.innerHeight || documentElement.clientHeight || body.clientHeight;
+
+        this.$store.commit(MOTATION_TYPES.WINDOWS_ON_RESIZE, { width, height });
+      },
     },
     computed: {
       verified() {
@@ -78,7 +91,7 @@
           item =>
             item.title ===
               this.$store.state.moduleMasterHeader.currentHeaderTabTag &&
-            item.sub.length > 0
+            item.sub.length > 0 && this.$store.state.moduleMasterLeftMenu.menuRootPath.length > 0
         )[0];
 
         return (
@@ -96,6 +109,16 @@
             item.sub.length > 0
         )[0];
       },
+    },
+     mounted() {
+      let _this = this;
+      _this.windowOnResize();
+
+      this.$nextTick(function () {
+        window.onresize = function () {
+          _this.windowOnResize();
+        };
+      });
     },
     created() {
       if (sessionStorage.getItem("store")) {
@@ -125,5 +148,9 @@
     height: 100%;
     width: 100%;
     font-family: "pf";
+  }
+
+  .header {
+    display: flex;
   }
 </style>
