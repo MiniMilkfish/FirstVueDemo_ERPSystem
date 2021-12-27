@@ -1,4 +1,5 @@
 export default {
     menuRootPath: [],
-    menuRoot: []
+    menuRoot: [],
+    currentMenuPageUrl: ''
 };

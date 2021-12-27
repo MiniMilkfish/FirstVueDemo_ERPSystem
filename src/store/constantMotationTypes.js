@@ -5,6 +5,9 @@ export default {
     INCREMENT: 'INCREMENT',
     LOGIN_INCREMENT: 'LOGIN_INCREMENT',
 
+    MASTER_GO_BACK_HOME: 'MASTER_GO_BACK_HOME',                             // 返回主页
+    MASTER_EXIST_PLATFORM: 'MASTER_EXIST_PLATFORM',                         // 退出当前系统
+
     // 平台头部
     MASTER_HEADER_TAB_ON_SELECT: 'MASTER_HEADER_TAB_ON_SELECT',              // 头Tab页选中事件
 

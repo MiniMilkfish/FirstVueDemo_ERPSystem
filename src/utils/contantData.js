@@ -13,7 +13,7 @@ export default {
     PAGE_LISTS: {
         'DASHBOARD': 'vMasterDashboard',   // 首页
         // 'MARKETING_PLAN': 'marketingPlan',      // 销售合同
-        'MARKETING_CONTRACT': 'marketingContract',    // 销售 - 销售合同
+        'MARKETING_CONTRACT': 'vMarketingContract',    // 销售 - 销售合同
         'CUSTOMER_CLASSIFICATION': 'customerClassification',   // 客户分类
         'CUSTOMER_LIST': 'customerList',       // 客户列表
         'OPERATION_AND_MAINTENANCE_TIME': 'operationAndMaintenanceTime',     //运维时间

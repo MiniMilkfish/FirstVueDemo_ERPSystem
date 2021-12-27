@@ -11,7 +11,12 @@ import {
   Checkbox,
   Button,
   Spin,
-  Dropdown
+  Dropdown,
+  Avatar,
+  Badge,
+  Result,
+  Row,
+  Col
 } from 'ant-design-vue';
 import App from './App.vue';
 import router from './route/index';
@@ -19,6 +24,7 @@ import router from './route/index';
 import store from './store/index';
 
 import vMasterDashboard from "./components/vMasterDashboard.vue";
+import vMarketingContract from "./components/vMarketingContract.vue";
 import vNotFound from "./components/vNotFound.vue";
 
 const app = createApp(App);
@@ -44,6 +50,11 @@ app.use(Layout)
   .use(Checkbox)
   .use(Spin)
   .use(Dropdown)
+  .use(Avatar)
+  .use(Badge)
+  .use(Result)
+  .use(Row)
+  .use(Col)
   .use(Button);
 
 /**
@@ -51,6 +62,7 @@ app.use(Layout)
  */
 app.component('vMasterDashboard', vMasterDashboard);
 app.component('vNotFound', vNotFound);
+app.component('vMarketingContract', vMarketingContract);
 
 /**
  * 应用挂载
