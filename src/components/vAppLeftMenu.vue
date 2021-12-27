@@ -1,7 +1,6 @@
 <template #icon>
   <a-menu
     v-model:selectedKeys="selectedKeys2"
-    style="width: 256px"
     mode="inline"
     :open-keys="openKeys"
     @openChange="onOpenChange"
@@ -57,7 +56,7 @@
       onRootItemClick({ keyPath }) {
         this.$store.commit(MOTATION_TYPES.MASTER_LEFT_MENU_ITEM_ON_CLICK, {
           keyPath,
-          rootKey: [this.$store.state.moduleMasterHeader.currentHeaderTabTag]
+          rootKey: [this.$store.state.moduleMasterHeader.currentHeaderTabTag],
         });
       },
     },
