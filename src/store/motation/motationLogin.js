@@ -1,4 +1,9 @@
 import MOTATION_TYPES from '../constantMotationTypes';
+import FAKE_DATE from "../../utils/fakeDate";
+
+const topHeaderHeight = 64,
+    breadcrumbHeight = 22,
+    contentMarginPaddingHeight = 36;
 
 /**
  * 处理同步请求
@@ -13,6 +18,16 @@ export default {
         state.LoginFormDimensions.sWidth = payload.width;
         state.LoginFormDimensions.sHeight = payload.height;
         state.LoginFormDimensions.isMobile = state.defaultSize > payload.width;
+
+        const breadcrumbShow = FAKE_DATE.routeList.filter(
+            item =>
+                item.title ===
+                payload.currentHeaderTabTag &&
+                item.sub.length > 0 &&
+                payload.menuRootPathL > 0
+        )[0];
+
+        state.LoginFormDimensions.pageContentHeight = payload.height - topHeaderHeight - (breadcrumbShow ? breadcrumbHeight : 0) - contentMarginPaddingHeight;
     },
     // 登录窗体信息提交
     [MOTATION_TYPES.LOGIN_FORM_SUBMIT](state, payload) {
