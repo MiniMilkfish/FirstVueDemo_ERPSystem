@@ -1,6 +1,6 @@
 <template #icon>
   <a-menu
-    v-model:selectedKeys="selectedKeys2"
+    v-model:selectedKeys="selectedKeys"
     mode="inline"
     :open-keys="openKeys"
     @openChange="onOpenChange"
@@ -9,9 +9,11 @@
     <a-sub-menu v-for="menuItem in matchedMenulist" :key="menuItem.title">
       <template #icon><SettingOutlined /></template>
       <template #title>{{ menuItem.title }}</template>
-      <a-menu-item v-for="item in menuItem.sub" :key="item.title">{{
-        item.title
-      }}</a-menu-item>
+      <a-menu-item
+        v-for="item in menuItem.sub"
+        :key="item.title + '_' + item.url"
+        >{{ item.title }}</a-menu-item
+      >
     </a-sub-menu>
   </a-menu>
 </template>
@@ -35,7 +37,7 @@
       return {
         rootSubmenuKeys,
         openKeys: ref([]),
-        selectedKeys2: ref([]),
+        selectedKeys: ref([]),
       };
     },
     components: {
@@ -53,9 +55,10 @@
           this.openKeys = latestOpenKey ? [latestOpenKey] : [];
         }
       },
-      onRootItemClick({ keyPath }) {
+      onRootItemClick(e) {
         this.$store.commit(MOTATION_TYPES.MASTER_LEFT_MENU_ITEM_ON_CLICK, {
-          keyPath,
+          key: e.key,
+          keyPath: e.keyPath,
           rootKey: [this.$store.state.moduleMasterHeader.currentHeaderTabTag],
         });
       },
