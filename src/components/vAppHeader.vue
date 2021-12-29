@@ -54,12 +54,12 @@
   } from "@ant-design/icons-vue";
 
   export default defineComponent({
-    data(){
+    data() {
       return {
         selectedKeys: [
-            `${this.$store.state.moduleMasterHeader.currentHeaderTabTag}_${this.$store.state.moduleMasterHeader.currentHeaderTabDashboardPageUrl}`,
-          ]
-      }
+          `${this.$store.state.moduleMasterHeader.currentHeaderTabTag}_${this.$store.state.moduleMasterHeader.currentHeaderTabDashboardPageUrl}`,
+        ],
+      };
     },
     components: {
       CaretDownOutlined,
@@ -77,13 +77,13 @@
           return [
             `${this.$store.state.moduleMasterHeader.currentHeaderTabTag}_${this.$store.state.moduleMasterHeader.currentHeaderTabDashboardPageUrl}`,
           ];
-        }
+        },
       },
     },
     watch: {
       getCurrentHeaderTabTag(newValue) {
         this.selectedKeys = newValue;
-      }
+      },
     },
     methods: {
       headerTabSelect({ key }) {
@@ -92,6 +92,10 @@
           key: splitWords[0],
           url: splitWords[1] || "",
         });
+
+        if (splitWords[1] && splitWords[1].length > 0) {
+          this.$store.commit(MOTATION_TYPES.CLEAR_CURRENT_MENU_PAGE_URL);
+        }
       },
       goBackLogin() {
         this.$store.commit(MOTATION_TYPES.MASTER_EXIST_PLATFORM);
