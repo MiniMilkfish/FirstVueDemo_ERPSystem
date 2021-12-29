@@ -13,6 +13,7 @@ export default {
 
     // 平台左侧菜单
     MASTER_LEFT_MENU_ITEM_ON_CLICK: 'MASTER_LEFT_MENU_ITEM_ON_CLICK',      //  左侧菜单菜单项点击事件
+    CLEAR_CURRENT_MENU_PAGE_URL: 'CLEAR_CURRENT_MENU_PAGE_URL',             //  清理当前菜单栏的垃圾数据
 
     // 登录页
     WINDOWS_ON_RESIZE: 'WINDOWS_ON_RESIZE',                                  // 窗体窗口调整事件
