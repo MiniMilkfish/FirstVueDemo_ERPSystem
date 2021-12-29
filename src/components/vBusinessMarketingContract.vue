@@ -1,3 +1,4 @@
+<!-- 商务 销售合同组件 -->
 <template>
   <div class="page_control_container">
     <div class="page_condition">
@@ -24,7 +25,7 @@
         },
       ]"
       :data-source="data"
-      :scroll="{ x: 2000 }"
+      :scroll="{ x: 2000, y: tableHeight }"
       :pagination="{ showQuickJumper: true }"
     >
       <template #bodyCell="{ column }">
@@ -62,6 +63,11 @@
         data,
         columns: CONSTANT_BUSINESS_MARKETING_CONTRACT.TABLE_COLUMNS,
       };
+    },
+    computed: {
+      tableHeight() {
+        return this.$store.state.moduleLogin.LoginFormDimensions.pageContentHeight - 104 - 32 - 55 - 64;
+      },
     },
   });
 </script>
