@@ -1,37 +1,37 @@
 <template>
-  <a-layout id="components-layout-demo-top-side-2" v-if="verified">
-    <a-spin :spinning="spinning">
-      <a-layout-header class="header">
-        <vAppHeader />
-      </a-layout-header>
-      <a-layout>
-        <a-layout-sider
-          width="256"
-          style="background: #fff"
-          v-if="leftMenuShow"
-        >
-          <vAppLeftMenu />
-        </a-layout-sider>
-        <a-layout style="padding: 12px 24px">
-          <vAppBreadCrumb />
-          <a-layout-content
-            :style="{
-              background: '#fff',
-              padding: '24px',
-              margin: '12px 0 0',
-              minHeight: '280px',
-              height: contentHeight + 'px',
-            }"
+  <a-config-provider :locale="zhCN">
+    <a-layout id="components-layout-demo-top-side-2" v-if="verified">
+      <a-spin :spinning="spinning">
+        <a-layout-header class="header">
+          <vAppHeader />
+        </a-layout-header>
+        <a-layout>
+          <a-layout-sider
+            width="256"
+            style="background: #ffffff"
+            v-if="leftMenuShow"
           >
-            <router-view></router-view>
-          </a-layout-content>
+            <vAppLeftMenu />
+          </a-layout-sider>
+          <a-layout style="padding: 12px 24px">
+            <vAppBreadCrumb />
+            <a-layout-content
+              :style="{
+                margin: '12px 0 0',
+                minHeight: '280px',
+                height: contentHeight + 'px',
+              }"
+            >
+              <router-view></router-view>
+            </a-layout-content>
+          </a-layout>
         </a-layout>
-      </a-layout>
-    </a-spin>
-  </a-layout>
-  <a-layout v-else>
-    <vLogin />
-  </a-layout>
+      </a-spin>
+    </a-layout>
+    <a-layout v-else>
+      <vLogin />
+    </a-layout>
+  </a-config-provider>
 </template>
 
 <script>
@@ -41,6 +41,7 @@
   import vAppBreadCrumb from "./components/vAppBreadcrumb.vue";
   import FAKE_DATE from "./utils/fakeDate";
   import MOTATION_TYPES from "./store/constantMotationTypes";
+  import zhCN from 'ant-design-vue/es/locale/zh_CN';
 
   export default {
     name: "App",
@@ -50,6 +51,7 @@
         current: ["mail"],
         openKeys: ["sub1"],
         spinning: false,
+        zhCN
       };
     },
     components: { vLogin, vAppHeader, vAppLeftMenu, vAppBreadCrumb },
@@ -91,7 +93,8 @@
           item =>
             item.title ===
               this.$store.state.moduleMasterHeader.currentHeaderTabTag &&
-            item.sub.length > 0 && this.$store.state.moduleMasterLeftMenu.menuRootPath.length > 0
+            item.sub.length > 0 &&
+            this.$store.state.moduleMasterLeftMenu.menuRootPath.length > 0
         )[0];
 
         return (
@@ -110,7 +113,7 @@
         )[0];
       },
     },
-     mounted() {
+    mounted() {
       let _this = this;
       _this.windowOnResize();
 
