@@ -1,3 +1,4 @@
+<!-- 左侧菜单栏组件 -->
 <template #icon>
   <a-menu
     v-model:selectedKeys="selectedKeys"
@@ -18,7 +19,7 @@
   </a-menu>
 </template>
 <script>
-  import { defineComponent, ref } from "vue";
+  import { defineComponent } from "vue";
   import { SettingOutlined } from "@ant-design/icons-vue";
   import FAKE_DATE from "../utils/fakeDate";
   import MOTATION_TYPES from "../store/constantMotationTypes";
@@ -34,14 +35,34 @@
           return true;
         });
       });
+
+      let openKeys = [],
+        selectedKeys = [];
+      if (
+        this.$store.state.moduleMasterLeftMenu.menuRootPath &&
+        this.$store.state.moduleMasterLeftMenu.menuRootPath.length > 0
+      ) {
+        openKeys = [].concat(
+          this.$store.state.moduleMasterLeftMenu.menuRootPath.slice(-1)
+        );
+
+        selectedKeys = [].concat(`${this.$store.state.moduleMasterLeftMenu.menuRootPath.slice(-1)}_${this.$store.state.moduleMasterLeftMenu.currentMenuPageUrl}`);
+      }
+
       return {
         rootSubmenuKeys,
-        openKeys: ref([]),
-        selectedKeys: ref([]),
+        openKeys,
+        selectedKeys
       };
     },
     components: {
       SettingOutlined,
+    },
+    watch: {
+      getCurrentMenuRootPath(e) {
+        this.openKeys = e.openKeys;
+        this.selectedKeys = e.selectedKeys;
+      },
     },
     methods: {
       onOpenChange(openKeys) {
@@ -78,7 +99,25 @@
           return [];
         }
       },
+      getCurrentMenuRootPath() {
+        let openKeys = [],
+          selectedKeys = [];
+        if (
+          this.$store.state.moduleMasterLeftMenu.menuRootPath &&
+          this.$store.state.moduleMasterLeftMenu.menuRootPath.length > 0
+        ) {
+          openKeys = [].concat(
+            this.$store.state.moduleMasterLeftMenu.menuRootPath[0]
+          );
+
+          selectedKeys = [].concat(`${this.$store.state.moduleMasterLeftMenu.menuRootPath.slice(-1)}_${this.$store.state.moduleMasterLeftMenu.currentMenuPageUrl}`);
+        }
+
+        return {
+          openKeys,
+          selectedKeys,
+        };
+      },
     },
   });
 </script>
-<style></style>
