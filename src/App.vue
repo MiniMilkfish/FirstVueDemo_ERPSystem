@@ -1,6 +1,6 @@
 <template>
   <a-config-provider :locale="zhCN">
-    <a-layout id="components-layout-demo-top-side-2" v-if="verified">
+    <a-layout id="components_container" v-if="verified">
       <a-spin :spinning="spinning">
         <a-layout-header class="header">
           <vAppHeader />
@@ -41,32 +41,18 @@
   import vAppBreadCrumb from "./components/vAppBreadcrumb.vue";
   import FAKE_DATE from "./utils/fakeDate";
   import MOTATION_TYPES from "./store/constantMotationTypes";
-  import zhCN from 'ant-design-vue/es/locale/zh_CN';
+  import zhCN from "ant-design-vue/es/locale/zh_CN";
 
   export default {
     name: "App",
     data() {
       return {
-        collapsed: false,
-        current: ["mail"],
-        openKeys: ["sub1"],
         spinning: false,
-        zhCN
+        zhCN,
       };
     },
     components: { vLogin, vAppHeader, vAppLeftMenu, vAppBreadCrumb },
-    watch: {
-      openKeys(val) {
-        console.log("openKeys", val);
-      },
-    },
     methods: {
-      handleClick(e) {
-        console.log("click", e);
-      },
-      titleClick(e) {
-        console.log("titleClick", e);
-      },
       windowOnResize() {
         const w = window,
           d = document,
@@ -77,7 +63,14 @@
           height =
             w.innerHeight || documentElement.clientHeight || body.clientHeight;
 
-        this.$store.commit(MOTATION_TYPES.WINDOWS_ON_RESIZE, { width, height });
+        this.$store.commit(MOTATION_TYPES.WINDOWS_ON_RESIZE, {
+          width,
+          height,
+          currentHeaderTabTag:
+            this.$store.state.moduleMasterHeader.currentHeaderTabTag,
+          menuRootPathL:
+            this.$store.state.moduleMasterLeftMenu.menuRootPath.length,
+        });
       },
     },
     computed: {
@@ -85,24 +78,8 @@
         return this.$store.state.moduleLogin.AuthInfo.validated;
       },
       contentHeight() {
-        const topHeaderHeight = 64,
-          breadcrumbHeight = 22,
-          contentMarginPaddingHeight = 36;
-
-        const breadcrumbShow = FAKE_DATE.routeList.filter(
-          item =>
-            item.title ===
-              this.$store.state.moduleMasterHeader.currentHeaderTabTag &&
-            item.sub.length > 0 &&
-            this.$store.state.moduleMasterLeftMenu.menuRootPath.length > 0
-        )[0];
-
-        return (
-          this.$store.state.moduleLogin.LoginFormDimensions.sHeight -
-          topHeaderHeight -
-          (breadcrumbShow ? breadcrumbHeight : 0) -
-          contentMarginPaddingHeight
-        );
+        return this.$store.state.moduleLogin.LoginFormDimensions
+          .pageContentHeight;
       },
       leftMenuShow() {
         return FAKE_DATE.routeList.filter(
