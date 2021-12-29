@@ -1,3 +1,4 @@
+<!-- 头部组件 -->
 <template>
   <div class="logo">内部运维系统平台</div>
   <a-menu
@@ -99,12 +100,13 @@
       },
       goBackLogin() {
         this.$store.commit(MOTATION_TYPES.MASTER_EXIST_PLATFORM);
+        sessionStorage.removeItem('store');
       },
     },
   });
 </script>
 <style>
-  #components-layout-demo-top-side-2 .logo {
+  #components_container .logo {
     line-height: 64px;
     float: left;
     color: #fff;
