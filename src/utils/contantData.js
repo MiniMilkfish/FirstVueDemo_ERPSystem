@@ -26,7 +26,7 @@ export default {
         'ACCESSORIES_MANAGEMENT': 'Accessories management',     // 配件管理
         'INVENTORY_COUNT': 'Inventory count',   // 库存盘点
         'BUSINESS_MARKETING_CONTRACT': 'vBusinessMarketingContract',     //商务 - 销售合同
-        'VERIFICATION_REPORT': 'Verification report',   //校验报告
+        'VERIFICATION_REPORT': 'vVerificationReport',   //校验报告
         'CONTROL_OVER_INVOICES': 'control over invoices',       //发票管理
         'PRODUCTION_SCHEDULE': 'Production schedule',   //生产计划表
         'DISPATCH_LIST': 'Dispatch list',       // 派单列表
