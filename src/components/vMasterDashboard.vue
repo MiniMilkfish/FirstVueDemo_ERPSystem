@@ -1,3 +1,4 @@
+<!-- 首页组件 -->
 <template>
   <div id="dashboard_container">
     <div class="left_panel">

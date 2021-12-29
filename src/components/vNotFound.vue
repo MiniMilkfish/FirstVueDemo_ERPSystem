@@ -1,3 +1,4 @@
+<!-- 404 组件 -->
 <template>
   <a-result
     status="404"

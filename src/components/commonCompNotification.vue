@@ -1,3 +1,4 @@
+<!-- 全局通知组件 -->
 <template>
   <div></div>
 </template>

@@ -1,3 +1,4 @@
+<!-- 500 组件 -->
 <template>
   <a-result status="500" title="500" sub-title="当前页面出现重大错误，赶紧联系开发大大修复一下吧 orz">
     <template #extra>

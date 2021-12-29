@@ -1,3 +1,4 @@
+<!-- 路由容器组件 -->
 <script>
   import { defineComponent, h, resolveDynamicComponent } from "vue";
 
