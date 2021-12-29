@@ -1,14 +1,11 @@
 <template>
-  <a-result
-    status="404"
-    title="404"
-    sub-title="将要预览的功能开发中, 如果紧急就去催一下开发大大吧~."
-  >
+  <a-result status="500" title="500" sub-title="当前页面出现重大错误，赶紧联系开发大大修复一下吧 orz">
     <template #extra>
       <a-button type="primary" @click="backToHome">返回主页</a-button>
     </template>
   </a-result>
 </template>
+
 <script>
   import { defineComponent } from "vue";
   import MOTATION_TYPES from "../store/constantMotationTypes";
