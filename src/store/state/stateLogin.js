@@ -3,7 +3,8 @@ export default {
         defaultSize: 769,
         sWidth: 412,
         sHeight: 732,
-        isMobile: true
+        isMobile: true,
+        pageContentHeight: 610
     },
     AuthInfo: {
         authName: '',
