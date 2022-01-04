@@ -1,7 +1,7 @@
 <!-- 路径 面包屑组件 -->
 <template>
-  <a-breadcrumb v-if="breadShow">
-    <a-breadcrumb-item v-for="(title, index) in breadCrumbs" :key="index" >{{title}}</a-breadcrumb-item>
+  <a-breadcrumb v-if="breadShow" style="margin-bottom: 20px;">
+    <a-breadcrumb-item v-for="(title, index) in breadCrumbs" :key="index">{{title}}</a-breadcrumb-item>
   </a-breadcrumb>
 </template>
 <script>

@@ -42,17 +42,16 @@
 
 <script>
   import { defineComponent } from "vue";
-  import CONSTANT_BUSINESS_MARKETING_CONTRACT from "../utils/contantBusinessMarketingContract";
+  import CONSTANT_BUSINESS_MARKETING_CONTRACT from "../utils/constantBusinessMarketingContract";
 
-  const data = [];
-
+  let data = [];
   for (let i = 0; i < 120; i++) {
-    data.push({
-      key: i,
-      name: `Edrward ${i}`,
-      age: 32,
-      address: `London Park no. ${i}`,
-    });
+    let rowObj = { key: i };
+
+    for (let j = 0; j < 26; j++) {
+      rowObj[String.fromCharCode(97 + j)] = "占位";
+    }
+    data.push(rowObj);
   }
 
   export default defineComponent({
@@ -66,7 +65,13 @@
     },
     computed: {
       tableHeight() {
-        return this.$store.state.moduleLogin.LoginFormDimensions.pageContentHeight - 104 - 32 - 55 - 64;
+        return (
+          this.$store.state.moduleLogin.LoginFormDimensions.pageContentHeight -
+          104 -
+          32 -
+          55 -
+          44
+        );
       },
     },
   });
