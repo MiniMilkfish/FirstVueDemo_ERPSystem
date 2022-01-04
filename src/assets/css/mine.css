@@ -1,5 +1,9 @@
+body {
+    background-color: #f0f2f5 !important;
+}
+
 .page_control_container {
-    margin: 20px 0;
+    margin-bottom: 20px;
     padding: 16px 24px;
     background-color: #FFFFFF;
     display: flex;
@@ -17,4 +21,8 @@
 .page_result {
     padding: 16px 24px;
     background-color: #FFFFFF;
+}
+
+.result_extra_control {
+    padding: 0px 24px 16px 0;
 }
