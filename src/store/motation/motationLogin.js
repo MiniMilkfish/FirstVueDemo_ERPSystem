@@ -2,7 +2,7 @@ import MOTATION_TYPES from '../constantMotationTypes';
 import FAKE_DATE from "../../utils/fakeDate";
 
 const topHeaderHeight = 64,
-    breadcrumbHeight = 22,
+    breadcrumbHeight = 42,
     contentMarginPaddingHeight = 36;
 
 /**
