@@ -1,4 +1,4 @@
-import MOTATION_TYPES from '../constantMotationTypes';
+import ACTION_TYPES from '../constantActionTypes';
 
 /**
  * 处理同步请求
@@ -12,7 +12,7 @@ export default {
      * @param {Array} payload.keyPath
      * @param {Array} payload.rootKey
      */
-    [MOTATION_TYPES.MASTER_LEFT_MENU_ITEM_ON_CLICK](state, payload) {
+    [ACTION_TYPES.MASTER_LEFT_MENU_ITEM_ON_CLICK](state, payload) {
         let targetPath = payload.key.split("_");
         if (targetPath[1] === void 0 || targetPath[1] === 'undefined') targetPath[1] = '';
         let keyPaths = payload.keyPath;
@@ -22,7 +22,7 @@ export default {
         state.menuRoot = payload.rootKey;
         state.currentMenuPageUrl = targetPath[1];
     },
-    [MOTATION_TYPES.CLEAR_CURRENT_MENU_PAGE_URL](state) {
+    [ACTION_TYPES.CLEAR_CURRENT_MENU_PAGE_URL](state) {
         state.currentMenuPageUrl = '';
     }
 }

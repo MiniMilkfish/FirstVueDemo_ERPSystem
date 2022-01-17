@@ -1,4 +1,4 @@
-<!-- 计量单位 组件 -->
+<!-- 供应渠道 组件 -->
 <template>
   <div class="page_result">
     <div class="result_extra_control">
@@ -167,7 +167,7 @@
 
 <script>
   import { defineComponent, reactive, ref, toRaw } from "vue";
-  import CONSTANT_UNIT_OF_MEASUREMENT from "../utils/constantUnitOfMeasurement";
+  import CONSTANT_SUPPLY_CHANNEL from "../utils/constantSupplyChannel";
   import { PlusOutlined, LoadingOutlined } from "@ant-design/icons-vue";
 
   let data = [];
@@ -185,7 +185,7 @@
       return {
         contractId: "",
         data,
-        columns: CONSTANT_UNIT_OF_MEASUREMENT.TABLE_COLUMNS,
+        columns: CONSTANT_SUPPLY_CHANNEL.TABLE_COLUMNS,
       };
     },
     components: {

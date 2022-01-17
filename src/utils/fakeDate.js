@@ -76,7 +76,7 @@ export default {
         },
         {
             title: "库存",
-            url: '',
+            url: pageList.STOCK_SUMMARY,
             id: 10,
             pid: 0,
             sub: [
@@ -124,17 +124,47 @@ export default {
                         },
                         {
                             title: "产品管理",
-                            url: pageList.PRODUCT_MANAGEMENT,
+                            url: '',
                             id: 17,
                             pid: 15,
-                            sub: []
+                            sub: [
+                                {
+                                    title: "产品分类",
+                                    url: pageList.PRODUCT_CLASSIFICATION,
+                                    id: 171,
+                                    pid: 17,
+                                    sub: []
+                                },
+                                {
+                                    title: "产品列表",
+                                    url: pageList.PRODUCT_LIST,
+                                    id: 172,
+                                    pid: 17,
+                                    sub: []
+                                }
+                            ]
                         },
                         {
                             title: "配件管理",
-                            url: pageList.ACCESSORIES_MANAGEMENT,
+                            url: '',
                             id: 18,
                             pid: 15,
-                            sub: []
+                            sub: [
+                                {
+                                    title: "配件分类",
+                                    url: pageList.ACCESSORY_CLASSIFICATION,
+                                    id: 181,
+                                    pid: 18,
+                                    sub: []
+                                },
+                                {
+                                    title: "配件列表",
+                                    url: pageList.ACCESSORIES_LIST,
+                                    id: 182,
+                                    pid: 18,
+                                    sub: []
+                                }
+                            ]
                         },
                         {
                             title: "库存盘点",
