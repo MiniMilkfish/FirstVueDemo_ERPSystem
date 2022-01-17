@@ -6,7 +6,7 @@
     theme="dark"
     mode="horizontal"
     :style="{ lineHeight: '64px', flex: 'auto' }"
-    @select="headerTabSelect"
+    @click="headerTabClick"
   >
     <a-menu-item v-for="item in menuItems" :key="item.join('_')">{{
       item[0]
@@ -21,7 +21,7 @@
     <div class="control_avatar">
       <a-dropdown>
         <a class="ant-dropdown-link" @click.prevent>
-          Admin&nbsp;
+          {{userName}}&nbsp;
           <a-avatar
             style="background-color: #87d068; margin-right: 5px"
             size="small"
@@ -47,7 +47,7 @@
 <script>
   import { defineComponent } from "vue";
   import FAKE_DATE from "../utils/fakeDate";
-  import MOTATION_TYPES from "../store/constantMotationTypes";
+  import ACTION_TYPES from "../store/constantActionTypes";
   import {
     CaretDownOutlined,
     UserOutlined,
@@ -60,6 +60,7 @@
         selectedKeys: [
           `${this.$store.state.moduleMasterHeader.currentHeaderTabTag}_${this.$store.state.moduleMasterHeader.currentHeaderTabDashboardPageUrl}`,
         ],
+        userName: this.$store.state.moduleLogin.AuthInfo.authName
       };
     },
     components: {
@@ -73,34 +74,33 @@
           return [item.title, item.url];
         });
       },
-      getCurrentHeaderTabTag: {
-        get() {
-          return [
-            `${this.$store.state.moduleMasterHeader.currentHeaderTabTag}_${this.$store.state.moduleMasterHeader.currentHeaderTabDashboardPageUrl}`,
-          ];
-        },
+      getCurrentHeaderTabTag() {
+        return [
+          `${this.$store.state.moduleMasterHeader.currentHeaderTabTag}_${this.$store.state.moduleMasterHeader.currentHeaderTabDashboardPageUrl}`,
+        ];
       },
     },
     watch: {
       getCurrentHeaderTabTag(newValue) {
+        console.log('getCurrentHeaderTabTag: ', newValue);
         this.selectedKeys = newValue;
       },
     },
     methods: {
-      headerTabSelect({ key }) {
+      headerTabClick({ key }) {
         let splitWords = key.split("_");
-        this.$store.commit(MOTATION_TYPES.MASTER_HEADER_TAB_ON_SELECT, {
+        this.$store.commit(ACTION_TYPES.MASTER_HEADER_TAB_ON_CLICK, {
           key: splitWords[0],
           url: splitWords[1] || "",
         });
 
         if (splitWords[1] && splitWords[1].length > 0) {
-          this.$store.commit(MOTATION_TYPES.CLEAR_CURRENT_MENU_PAGE_URL);
+          this.$store.commit(ACTION_TYPES.CLEAR_CURRENT_MENU_PAGE_URL);
         }
       },
       goBackLogin() {
-        this.$store.commit(MOTATION_TYPES.MASTER_EXIST_PLATFORM);
-        sessionStorage.removeItem('store');
+        this.$store.commit(ACTION_TYPES.MASTER_EXIST_PLATFORM);
+        sessionStorage.removeItem("store");
       },
     },
   });
