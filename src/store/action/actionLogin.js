@@ -1,30 +1,22 @@
-import ACTION_TYPES from '../constantActionTypes';
-import ServerConfig from '../../config/urlConfig';
-import * as common from '../../utils/common';
+import ACTION_TYPE from '../constantMotationTypes';
+import MOTATION_TYPES from '../constantMotationTypes';
 
 /**
  * 处理异步请求
  */
 export default {
-    [ACTION_TYPES.LOGIN_FORM_SUBMIT]({ commit }, payload) {
-        let reqUrl = `${ServerConfig.SERVER_BASE_URL}${ServerConfig.SERVER_API.LOGIN_AUTH}`,
-            _extraTools = {
-                actionFailure: payload.actionFailure,
-            },
-            reqParam = {
-                userName: payload.name,
-                password: payload.pass,
-                seed: payload.seed,
-                vaildCode: payload.vaildCode
-            };
-
-        common.fetchGet(reqUrl, reqParam, function (json) {
-            if (json) {
-                let token = json.token;
-                common.setItem('t', token);
-
-                commit({ type: ACTION_TYPES.LOGIN_FORM_SUBMIT, ...payload })
-            }
-        }, _extraTools)
+    // 登录自增 - 测试
+    [ACTION_TYPE.LOGIN_INCREMENT]({ commit }) {
+        setTimeout(() => {
+            commit({
+                type: MOTATION_TYPES.LOGIN_INCREMENT,
+                name: "干就完了"
+            })
+        }, 3000);
+    },
+    [ACTION_TYPE.LOGIN_FORM_SUBMIT]({ commit }, payload) {
+        setTimeout(() => {
+            commit({type: ACTION_TYPE.LOGIN_FORM_SUBMIT, ...payload})
+        });
     }
 }

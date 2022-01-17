@@ -14,24 +14,17 @@ export default {
         'DASHBOARD': 'vMasterDashboard',   // 首页
         // 'MARKETING_PLAN': 'marketingPlan',      // 销售计划
         'MARKETING_CONTRACT': 'vMarketingContract',    // 销售 - 销售合同
-        'CUSTOMER_CLASSIFICATION': 'vCustomerClassification',   // 客户分类
-        'CUSTOMER_LIST': 'vCustomerList',       // 客户列表
-        'OPERATION_AND_MAINTENANCE_TIME': 'vOperationAndMaintenanceTime',     //运维时间
-        'STOCK_SUMMARY': 'vStockSummary',     // 库存
+        'CUSTOMER_CLASSIFICATION': 'customerClassification',   // 客户分类
+        'CUSTOMER_LIST': 'customerList',       // 客户列表
+        'OPERATION_AND_MAINTENANCE_TIME': 'operationAndMaintenanceTime',     //运维时间
         'UNIT_OF_MEASUREMENT': 'vUnitOfMeasurement', // 计量单位
-        'INVENTORY_ALARM_SETTINGS': 'vInventoryAlarmSettings',    // 库存报警设置
-        'SUPPLY_CHANNEL': 'vSupplyChannel', // 供应渠道
+        'INVENTORY_ALARM_SETTINGS': 'Inventory alarm settings',    // 库存报警设置
+        'SUPPLY_CHANNEL': 'Supply channel', // 供应渠道
         // 'INVENTORY_SCHEDULING': 'Inventory Scheduling',     // 库存调度
-        'STOCK_IN_AND_STOCK_OUT': 'vStockInAndStockOut',     // 入库出库
-        'PRODUCT_MANAGEMENT': 'vProductManagement',     // 产品管理
-
-        'PRODUCT_CLASSIFICATION': 'vProductClassification', // 产品分类
-        'PRODUCT_LIST': 'vProductList',     // 产品列表
-        'ACCESSORY_CLASSIFICATION': 'vAccessoryClassification',      // 配件分类
-        'ACCESSORIES_LIST': 'vAccessoriesList',      // 配件列表
-
+        'STOCK_IN_AND_STOCK_OUT': 'Stock in and stock out',     // 入库出库
+        'PRODUCT_MANAGEMENT': 'Product management',     // 产品管理
         'ACCESSORIES_MANAGEMENT': 'Accessories management',     // 配件管理
-        'INVENTORY_COUNT': 'vInventoryCount',   // 库存盘点
+        'INVENTORY_COUNT': 'Inventory count',   // 库存盘点
         'BUSINESS_MARKETING_CONTRACT': 'vBusinessMarketingContract',     //商务 - 销售合同
         'VERIFICATION_REPORT': 'vVerificationReport',   //校验报告
         'CONTROL_OVER_INVOICES': 'vControlOverInvoices',       //发票管理
@@ -39,5 +32,7 @@ export default {
         'DISPATCH_LIST': 'vDispatchList',       // 派单列表
         'PERSONNEL_LIST': 'vPersonnelList',     // 人员列表
         'BUILDING_SITE_LIST': 'vBuildingSiteList',     // 工地列表
+
+
     }
 }

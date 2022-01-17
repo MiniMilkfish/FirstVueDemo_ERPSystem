@@ -9,7 +9,7 @@ export default {
     AuthInfo: {
         authName: '',
         authPass: '',
-        validated: false,               // 账户是否有效
+        validated: false,
         authUserDetail: {}
     },
     ErrorPanel: {
@@ -18,8 +18,5 @@ export default {
         message: "",	// 标题
         description: "",	// 详细描述
     },
-    Varification: {
-        seed: '',
-        link: ''
-    }
+    loginCount: 0
 };

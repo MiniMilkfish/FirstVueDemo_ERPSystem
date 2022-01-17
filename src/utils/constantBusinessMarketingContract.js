@@ -17,6 +17,7 @@ export default {
             width: 200,
             key: 'b',
             dataIndex: 'b',
+            fixed: 'left'
         }, {
             title: '工地项目名称',
             width: 200,

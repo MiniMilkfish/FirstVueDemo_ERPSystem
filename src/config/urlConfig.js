@@ -9,9 +9,6 @@ const SERVER_CONFIG = {
 export default {
     SERVER_BASE_URL: `http://${SERVER_CONFIG.HOST}:${SERVER_CONFIG.PORT}/`,
     SERVER_API: {
-        LOGIN_GET_VALIDGRAPHIC: 'authenticate/getvalidgraphic',                    // 获取验证码图片
-        LOGIN_AUTH: 'authenticate/login',                                          // 登录验证
-
-        MARKETING_CONTRACT_LIST: 'api/salesbusiness/salescontract/list',           // 销售合同列表
+        // 
     }
 }
