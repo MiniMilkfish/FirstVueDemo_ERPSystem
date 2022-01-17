@@ -11,6 +11,8 @@
     "@ant-design/icons-vue": "^6.0.1",
     "ant-design-vue": "^3.0.0-alpha.14",
     "core-js": "^3.6.5",
+    "isomorphic-fetch": "^3.0.0",
+    "safe-json-parse": "^4.0.0",
     "sass-loader": "^12.4.0",
     "store": "^2.0.12",
     "vue": "^3.0.0",
