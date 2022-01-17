@@ -35,11 +35,11 @@ import {
   InputSearch,
   Collapse,
   CollapsePanel,
-  InputGroup
+  InputGroup,
+  Image
 } from 'ant-design-vue';
 import App from './App.vue';
 import router from './route/index';
-// import MOTATION_TYPES from './store/constantMotationTypes';
 import store from './store/index';
 
 /**
@@ -57,6 +57,19 @@ import vProductionSchedule from "./components/vProductionSchedule.vue";
 import vDispatchList from "./components/vDispatchList.vue";
 import vPersonnelList from "./components/vPersonnelList.vue";
 import vBuildingSiteList from "./components/vBuildingSiteList.vue";
+import vOperationAndMaintenanceTime from "./components/vOperationAndMaintenanceTime.vue";
+import vStockSummary from "./components/vStockSummary.vue";
+import vInventoryAlarmSettings from "./components/vInventoryAlarmSettings.vue";
+import vSupplyChannel from "./components/vSupplyChannel.vue";
+import vStockInAndStockOut from "./components/vStockInAndStockOut.vue";
+import vProductManagement from "./components/vProductManagement.vue";
+import vProductClassification from "./components/vProductClassification.vue";
+import vProductList from "./components/vProductList.vue";
+import vAccessoryClassification from "./components/vAccessoryClassification.vue";
+import vAccessoriesList from "./components/vAccessoriesList.vue";
+import vInventoryCount from "./components/vInventoryCount.vue";
+import vCustomerClassification from "./components/vCustomerClassification.vue";
+import vCustomerList from "./components/vCustomerList.vue";
 
 const app = createApp(App);
 
@@ -104,7 +117,8 @@ app.use(Layout)
   .use(InputSearch)
   .use(Collapse)
   .use(CollapsePanel)
-  .use(InputGroup);
+  .use(InputGroup)
+  .use(Image);
 
 /**
  * 注册自定义组件
@@ -121,6 +135,19 @@ app.component('vProductionSchedule', vProductionSchedule);
 app.component('vDispatchList', vDispatchList);
 app.component('vPersonnelList', vPersonnelList);
 app.component('vBuildingSiteList', vBuildingSiteList);
+app.component('vOperationAndMaintenanceTime', vOperationAndMaintenanceTime);
+app.component('vStockSummary', vStockSummary);
+app.component('vInventoryAlarmSettings', vInventoryAlarmSettings);
+app.component('vSupplyChannel', vSupplyChannel);
+app.component('vStockInAndStockOut', vStockInAndStockOut);
+app.component('vProductManagement', vProductManagement);
+app.component('vProductClassification', vProductClassification);
+app.component('vProductList', vProductList);
+app.component('vAccessoryClassification', vAccessoryClassification);
+app.component('vAccessoriesList', vAccessoriesList);
+app.component('vInventoryCount', vInventoryCount);
+app.component('vCustomerClassification', vCustomerClassification);
+app.component('vCustomerList', vCustomerList);
 
 /**
  * 应用挂载
