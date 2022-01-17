@@ -9,12 +9,12 @@
 
 <script>
   import { defineComponent } from "vue";
-  import MOTATION_TYPES from "../store/constantMotationTypes";
+  import ACTION_TYPES from "../store/constantActionTypes";
 
   export default defineComponent({
     methods: {
       backToHome() {
-        this.$store.commit(MOTATION_TYPES.MASTER_GO_BACK_HOME);
+        this.$store.commit(ACTION_TYPES.MASTER_GO_BACK_HOME);
       },
     },
   });
