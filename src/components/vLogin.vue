@@ -39,30 +39,45 @@
               :wrapper-col="wrapperCol"
               hideRequiredMark
             >
-              <a-form-item
-                label="用户名"
-                has-feedback
-                name="name"
-                placeholder="请输入用户名"
-              >
+              <a-form-item label="用户名" name="name">
                 <a-input
                   class="form_control"
                   v-model:value="formState.name"
                   autocomplete="off"
+                  placeholder="请输入用户名"
                 />
               </a-form-item>
-              <a-form-item
-                label="密码"
-                has-feedback
-                name="pass"
-                placeholder="请输入密码"
-              >
+              <a-form-item label="密码" name="pass">
                 <a-input-password
                   class="form_control"
                   v-model:value="formState.pass"
                   type="password"
                   autocomplete="off"
+                  placeholder="请输入密码"
                 />
+              </a-form-item>
+              <a-form-item label="验证码" name="vaildCode">
+                <a-input-group compact>
+                  <a-input
+                    class="form_control"
+                    v-model:value="formState.vaildCode"
+                    style="width: 220px; border-radius: 8px 0 0 8px"
+                    placeholder="请输入验证码"
+                  />
+                  <a-avatar
+                    shape="square"
+                    style="
+                      width: 130px;
+                      height: 50px;
+                      padding: 2px;
+                      border: 1px solid #d9d9d9;
+                      border-radius: 0 8px 8px 0;
+                      cursor: pointer;
+                    "
+                    :src="getVarificationCode"
+                    @click="refreshVarificationCode"
+                  />
+                </a-input-group>
               </a-form-item>
 
               <a-form-item>
@@ -90,8 +105,7 @@
 </template>
 <script>
   import { defineComponent, reactive, ref } from "vue";
-  // import { useRouter } from "vue-router";
-  import MOTATION_TYPES from "../store/constantMotationTypes";
+  import ACTION_TYPES from "../store/constantActionTypes";
   import commonCompNotification from "./commonCompNotification.vue";
   import CONSTANT_DATA from "../utils/contantData";
 
@@ -102,8 +116,9 @@
     data() {
       const formRef = ref(),
         formState = reactive({
-          name: undefined,
-          pass: undefined,
+          name: "",
+          pass: "",
+          vaildCode: "",
         }),
         rules = {
           name: {
@@ -116,14 +131,14 @@
               message: "密码为必填项",
             },
             {
-              min: 6,
-              message: "密码最短为6位",
-            },
-            {
               max: 20,
               message: "密码最长为20位",
             },
           ],
+          vaildCode: {
+            required: true,
+            message: "验证码为必填项",
+          },
         },
         labelCol = {
           span: 8,
@@ -149,15 +164,16 @@
     },
     methods: {
       onSubmit() {
-        // const router = useRouter();
         const _this = this;
         this.$refs.formRef
           .validate()
           .then(res => {
-            _this.$store.dispatch(MOTATION_TYPES.LOGIN_FORM_SUBMIT, res);
-
-            // 路由跳转
-            _this.$router.push(CONSTANT_DATA.PAGE_LISTS.DASHBOARD);
+            // 登录验证
+            _this.$store.dispatch(ACTION_TYPES.LOGIN_FORM_SUBMIT, {
+              ...res,
+              seed: _this.$store.state.moduleLogin.Varification.seed,
+              actionFailure: _this.actionFailure,
+            });
           })
           .catch(({ errorFields }) => {
             if (errorFields && errorFields.length > 0) {
@@ -168,6 +184,21 @@
               this.notification.description = description;
             }
           });
+      },
+      refreshVarificationCode() {
+        this.$store.commit(ACTION_TYPES.REFRESH_VARIFICATION_CODE);
+      },
+      actionSuccess(description) {
+        this.notification.tick = Math.random();
+        this.notification.type = CONSTANT_DATA.NOTIFICATION_TYPES.SUCCESS;
+        this.notification.message = "登录成功";
+        this.notification.description = description;
+      },
+      actionFailure(description) {
+        this.notification.tick = Math.random();
+        this.notification.type = CONSTANT_DATA.NOTIFICATION_TYPES.ERROR;
+        this.notification.message = "登录错误";
+        this.notification.description = description;
       },
     },
     computed: {
@@ -182,6 +213,12 @@
           mHeight: sHeight * 0.71,
         };
       },
+      getVarificationCode() {
+        return this.$store.state.moduleLogin.Varification.link;
+      },
+    },
+    mounted() {
+      this.refreshVarificationCode();
     },
   });
 </script>
