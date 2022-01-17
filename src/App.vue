@@ -40,7 +40,7 @@
   import vAppLeftMenu from "./components/vAppLeftMenu.vue";
   import vAppBreadCrumb from "./components/vAppBreadcrumb.vue";
   import FAKE_DATE from "./utils/fakeDate";
-  import MOTATION_TYPES from "./store/constantMotationTypes";
+  import ACTION_TYPES from "./store/constantActionTypes";
   import zhCN from "ant-design-vue/es/locale/zh_CN";
 
   export default {
@@ -63,7 +63,7 @@
           height =
             w.innerHeight || documentElement.clientHeight || body.clientHeight;
 
-        this.$store.commit(MOTATION_TYPES.WINDOWS_ON_RESIZE, {
+        this.$store.commit(ACTION_TYPES.WINDOWS_ON_RESIZE, {
           width,
           height,
           currentHeaderTabTag:
