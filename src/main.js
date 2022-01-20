@@ -36,7 +36,8 @@ import {
   Collapse,
   CollapsePanel,
   InputGroup,
-  Image
+  Image,
+  Popconfirm
 } from 'ant-design-vue';
 import App from './App.vue';
 import router from './route/index';
@@ -118,7 +119,8 @@ app.use(Layout)
   .use(Collapse)
   .use(CollapsePanel)
   .use(InputGroup)
-  .use(Image);
+  .use(Image)
+  .use(Popconfirm);
 
 /**
  * 注册自定义组件
