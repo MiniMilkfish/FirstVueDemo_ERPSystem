@@ -8,14 +8,14 @@ export default {
         {
             title: '序号',
             width: 200,
-            key: 'a',
-            dataIndex: 'a',
+            key: 'id',
+            dataIndex: 'id',
             align: 'center',
         }, {
             title: '单位',
             width: 200,
-            key: 'b',
-            dataIndex: 'b',
+            key: 'unitname',
+            dataIndex: 'unitname',
         }
     ]
 }
