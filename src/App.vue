@@ -1,7 +1,7 @@
 <template>
-  <a-config-provider :locale="zhCN">
-    <a-layout id="components_container" v-if="verified">
-      <a-spin :spinning="spinning">
+  <a-spin :spinning="spinningShow" size="large">
+    <a-config-provider :locale="zhCN">
+      <a-layout id="components_container" v-if="verified">
         <a-layout-header class="header">
           <vAppHeader />
         </a-layout-header>
@@ -26,12 +26,18 @@
             </a-layout-content>
           </a-layout>
         </a-layout>
-      </a-spin>
-    </a-layout>
-    <a-layout v-else>
-      <vLogin />
-    </a-layout>
-  </a-config-provider>
+      </a-layout>
+      <a-layout v-else>
+        <vLogin />
+      </a-layout>
+      <commonCompNotification
+        :message="notificationShow.message"
+        :description="notificationShow.description"
+        :type="notificationShow.type"
+        :tick="notificationShow.tick"
+      />
+    </a-config-provider>
+  </a-spin>
 </template>
 
 <script>
@@ -42,16 +48,22 @@
   import FAKE_DATE from "./utils/fakeDate";
   import ACTION_TYPES from "./store/constantActionTypes";
   import zhCN from "ant-design-vue/es/locale/zh_CN";
+  import commonCompNotification from "../src/components/commonCompNotification.vue";
 
   export default {
     name: "App",
     data() {
       return {
-        spinning: false,
         zhCN,
       };
     },
-    components: { vLogin, vAppHeader, vAppLeftMenu, vAppBreadCrumb },
+    components: {
+      vLogin,
+      vAppHeader,
+      vAppLeftMenu,
+      vAppBreadCrumb,
+      commonCompNotification,
+    },
     methods: {
       windowOnResize() {
         const w = window,
@@ -88,6 +100,12 @@
               this.$store.state.moduleMasterHeader.currentHeaderTabTag &&
             item.sub.length > 0
         )[0];
+      },
+      notificationShow() {
+        return this.$store.state.moduleGlobal.notification;
+      },
+      spinningShow() {
+        return this.$store.state.moduleGlobal.spinning;
       },
     },
     mounted() {
@@ -128,6 +146,10 @@
     height: 100%;
     width: 100%;
     font-family: "pf";
+  }
+
+  #app > :first-child {
+    height: 100%;
   }
 
   .header {
