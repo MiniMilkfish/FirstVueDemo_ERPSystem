@@ -45,6 +45,7 @@
                   v-model:value="formState.name"
                   autocomplete="off"
                   placeholder="请输入用户名"
+                  @keyup.enter="onSubmit"
                 />
               </a-form-item>
               <a-form-item label="密码" name="pass">
@@ -54,6 +55,7 @@
                   type="password"
                   autocomplete="off"
                   placeholder="请输入密码"
+                  @keyup.enter="onSubmit"
                 />
               </a-form-item>
               <a-form-item label="验证码" name="vaildCode">
@@ -63,6 +65,7 @@
                     v-model:value="formState.vaildCode"
                     style="width: 220px; border-radius: 8px 0 0 8px"
                     placeholder="请输入验证码"
+                    @keyup.enter="onSubmit"
                   />
                   <a-avatar
                     shape="square"
@@ -96,28 +99,18 @@
       </div>
     </div>
   </div>
-  <commonCompNotification
-    :message="notification.message"
-    :description="notification.description"
-    :type="notification.type"
-    :tick="notification.tick"
-  />
 </template>
 <script>
   import { defineComponent, reactive, ref } from "vue";
   import ACTION_TYPES from "../store/constantActionTypes";
-  import commonCompNotification from "./commonCompNotification.vue";
   import CONSTANT_DATA from "../utils/contantData";
 
   export default defineComponent({
-    components: {
-      commonCompNotification,
-    },
     data() {
       const formRef = ref(),
         formState = reactive({
-          name: "",
-          pass: "",
+          name: "yk",
+          pass: "123",
           vaildCode: "",
         }),
         rules = {
@@ -154,12 +147,6 @@
         labelCol,
         wrapperCol,
         valve: true,
-        notification: {
-          message: "",
-          description: "",
-          type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
-          tick: 1,
-        },
       };
     },
     methods: {
@@ -178,10 +165,11 @@
           .catch(({ errorFields }) => {
             if (errorFields && errorFields.length > 0) {
               let description = errorFields[0].errors[0];
-              this.notification.tick = Math.random();
-              this.notification.type = CONSTANT_DATA.NOTIFICATION_TYPES.ERROR;
-              this.notification.message = "登录错误";
-              this.notification.description = description;
+              _this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+                type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+                message: "登录错误",
+                description: description,
+              });
             }
           });
       },
@@ -189,16 +177,20 @@
         this.$store.commit(ACTION_TYPES.REFRESH_VARIFICATION_CODE);
       },
       actionSuccess(description) {
-        this.notification.tick = Math.random();
-        this.notification.type = CONSTANT_DATA.NOTIFICATION_TYPES.SUCCESS;
-        this.notification.message = "登录成功";
-        this.notification.description = description;
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.SUCCESS,
+          message: "登录成功",
+          description: description,
+        });
       },
       actionFailure(description) {
-        this.notification.tick = Math.random();
-        this.notification.type = CONSTANT_DATA.NOTIFICATION_TYPES.ERROR;
-        this.notification.message = "登录错误";
-        this.notification.description = description;
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+          message: "登录错误",
+          description: description,
+        });
+
+        this.$store.commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
       },
     },
     computed: {
