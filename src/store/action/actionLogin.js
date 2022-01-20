@@ -7,6 +7,8 @@ import * as common from '../../utils/common';
  */
 export default {
     [ACTION_TYPES.LOGIN_FORM_SUBMIT]({ commit }, payload) {
+        commit(ACTION_TYPES.GLOBAL_SPINNING_SHOW);
+
         let reqUrl = `${ServerConfig.SERVER_BASE_URL}${ServerConfig.SERVER_API.LOGIN_AUTH}`,
             _extraTools = {
                 actionFailure: payload.actionFailure,
@@ -18,13 +20,12 @@ export default {
                 vaildCode: payload.vaildCode
             };
 
-        common.fetchGet(reqUrl, reqParam, function (json) {
-            if (json) {
-                let token = json.token;
-                common.setItem('t', token);
-
-                commit({ type: ACTION_TYPES.LOGIN_FORM_SUBMIT, ...payload })
-            }
+        common.fetchGet(reqUrl, reqParam, function (result) {
+            commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
+            
+            let token = result.token;
+            common.setItem('t', token);
+            commit({ type: ACTION_TYPES.LOGIN_FORM_SUBMIT, ...payload })
         }, _extraTools)
     }
 }
