@@ -13,5 +13,9 @@ export default {
         LOGIN_AUTH: 'authenticate/login',                                          // 登录验证
 
         MARKETING_CONTRACT_LIST: 'api/salesbusiness/salescontract/list',           // 销售合同列表
+
+        UNIT_OF_MEASUREMENT_LIST: 'api/stock/measureunit/list',                    // 计量单位列表
+        UNIT_OF_MEASUREMENT_MODIFY: 'api/stock/measureunit/modify',                // 计量单位新增 && 编辑
+        UNIT_OF_MEASUREMENT_DELETE: 'api/stock/measureunit/delete',                // 计量单位 删除
     }
 }
