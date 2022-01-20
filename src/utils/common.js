@@ -13,14 +13,16 @@ Iconv.skipDecodeWarning = true;
  * @param {Object} body
  * @param {Function} callback
  * @param {Object} extra
+ * @param {Boolean} [isFullRes=false] true 返回配置文件原内容的json对象;false 返回后端res.data 的json对象
  * */
-export function fetchPost(url, body = {}, callback, extra) {
+export function fetchPost(url, body = {}, callback, extra, isFullRes) {
     let fetchParam = {
         mode: "cors",
         timeout: 20 * 1000,
         headers: {
             "Accept": "application/json, text/plain, */*",
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": 'Bearer ' + getItem('t')
         },
         method: 'POST',
         body: jsonStringify(body)
@@ -32,7 +34,7 @@ export function fetchPost(url, body = {}, callback, extra) {
     ).then(
         response => checkFetchStatus(response)
     ).then(json => {
-        handlerFetchResponse(url, json, extra, callback);
+        handlerFetchResponse(url, json, extra, isFullRes, callback);
     }).catch(error => {
         handlerFetchError(url, error, extra);
     });
@@ -44,9 +46,9 @@ export function fetchPost(url, body = {}, callback, extra) {
  * @param {Object} body
  * @param {Function} callback
  * @param {Object} extra
- * @param {Function} dispatch
+ * @param {Boolean} [isFullRes=false] true 返回配置文件原内容的json对象;false 返回后端res.data 的json对象
  * */
-export function fetchPost_FormData(url, body = {}, callback, extra) {
+export function fetchPost_FormData(url, body = {}, callback, extra, isFullRes) {
     let formData = new FormData();
     Object.keys(body).map(item => {
         formData.append(item, body[item]);
@@ -56,6 +58,9 @@ export function fetchPost_FormData(url, body = {}, callback, extra) {
     let fetchParam = {
         mode: "cors",
         timeout: 20 * 1000,
+        headers: {
+            "Authorization": 'Bearer ' + getItem('t')
+        },
         method: 'POST',
         body: formData
     };
@@ -66,7 +71,7 @@ export function fetchPost_FormData(url, body = {}, callback, extra) {
     ).then(
         response => checkFetchStatus(response)
     ).then(json => {
-        handlerFetchResponse(url, null, json, extra, callback);
+        handlerFetchResponse(url, null, json, extra, isFullRes, callback);
     }).catch(error => {
         handlerFetchError(url, null, error, extra);
     });
@@ -78,15 +83,16 @@ export function fetchPost_FormData(url, body = {}, callback, extra) {
  * @param {Object} body
  * @param {Function} callback
  * @param {Object} extra
- * @param {Function} dispatch
+ * @param {Boolean} [isFullRes=false] true 返回配置文件原内容的json对象;false 返回后端res.data 的json对象
  * */
-export function fetchGet(url, body = {}, callback, extra, download = false) {
+export function fetchGet(url, body = {}, callback, extra, isFullRes, download = false) {
     let fetchParam = {
         mode: "cors",
         timeout: 20 * 1000,
         headers: {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
+            "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+            "Authorization": 'Bearer ' + getItem('t')
         },
         method: 'GET'
     };
@@ -124,7 +130,7 @@ export function fetchGet(url, body = {}, callback, extra, download = false) {
         ).then(
             response => checkFetchStatus(response)
         ).then(json => {
-            handlerFetchResponse(url, json, extra, callback);
+            handlerFetchResponse(url, json, extra, isFullRes, callback);
         }).catch(error => {
             handlerFetchError(url, error, extra);
         });
@@ -147,16 +153,16 @@ function checkFetchStatus(response) {
  * @param {String} url
  * @param {Object} json
  * @param {Object} extra
+ * @param {Boolean} isFullRes
  * @param {Function} callback
  * */
-function handlerFetchResponse(url, json, extra, callback) {
+function handlerFetchResponse(_url, json, extra, isFullRes, callback) {
     if (json.code !== void 0) {
         if (json.code === RES_STATUS.SUCCESS) {
-            callback(json.data);	                //成功的回调函数
+            callback(isFullRes? json: json.data);	                //成功的回调函数
 
             if (extra.actionSuccess !== void 0 && extra.route !== void 0) {
                 //操作成功，页面跳转
-                // dispatch(extra.actionSuccess(json.data, extra.route));
                 console.log('handlerFetchResponse: ', '操作成功，页面跳转')
                 return true;
             }
