@@ -21,7 +21,7 @@
     <div class="control_avatar">
       <a-dropdown>
         <a class="ant-dropdown-link" @click.prevent>
-          {{userName}}&nbsp;
+          {{ userName }}&nbsp;
           <a-avatar
             style="background-color: #87d068; margin-right: 5px"
             size="small"
@@ -33,11 +33,11 @@
           <CaretDownOutlined />
         </a>
         <template #overlay>
-          <a-menu>
-            <a-menu-item key="0"> 用户中心 </a-menu-item>
-            <a-menu-item key="1"> 系统设置 </a-menu-item>
+          <a-menu style="width: 150px; margin-top: 15px">
+            <a-menu-item key="0"><UserOutlined/> &nbsp;用户中心</a-menu-item>
+            <a-menu-item key="1"><SettingOutlined/> &nbsp;系统设置</a-menu-item>
             <a-menu-divider />
-            <a-menu-item key="3" @click="goBackLogin"> 退出</a-menu-item>
+            <a-menu-item key="3" @click="goBackLogin"><LogoutOutlined/> &nbsp;退出</a-menu-item>
           </a-menu>
         </template>
       </a-dropdown>
@@ -52,6 +52,8 @@
     CaretDownOutlined,
     UserOutlined,
     MailOutlined,
+    LogoutOutlined,
+    SettingOutlined,
   } from "@ant-design/icons-vue";
 
   export default defineComponent({
@@ -60,13 +62,15 @@
         selectedKeys: [
           `${this.$store.state.moduleMasterHeader.currentHeaderTabTag}_${this.$store.state.moduleMasterHeader.currentHeaderTabDashboardPageUrl}`,
         ],
-        userName: this.$store.state.moduleLogin.AuthInfo.authName
+        userName: this.$store.state.moduleLogin.AuthInfo.authName,
       };
     },
     components: {
       CaretDownOutlined,
       UserOutlined,
       MailOutlined,
+      LogoutOutlined,
+      SettingOutlined,
     },
     computed: {
       menuItems() {
@@ -82,7 +86,6 @@
     },
     watch: {
       getCurrentHeaderTabTag(newValue) {
-        console.log('getCurrentHeaderTabTag: ', newValue);
         this.selectedKeys = newValue;
       },
     },
