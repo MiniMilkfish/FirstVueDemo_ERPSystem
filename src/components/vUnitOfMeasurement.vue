@@ -26,7 +26,6 @@
         total: getUnitOfMeasurementTableDatas.total,
         current: getUnitOfMeasurementTableDatas.activePage,
         onChange: handleQueryUnitOfMeasurementList,
-        onShowSizeChange: handleQueryUnitOfMeasurementList,
       }"
     >
       <template #bodyCell="{ column, record }">
@@ -159,6 +158,13 @@
           });
       },
       handleQueryUnitOfMeasurementList(currentPage, showPageSize) {
+        currentPage = currentPage
+          ? currentPage
+          : this.$store.state.moduleUnitOfMeasurement.tableData.activePage;
+        showPageSize = showPageSize
+          ? showPageSize
+          : CONSTANT_UNIT_OF_MEASUREMENT.TABLE_SHOW_SIZE;
+
         this.$store.dispatch(ACTION_TYPES.UNIT_OF_MEASUREMENT_LIST_QUERY, {
           actionFailure: this.actionFailure,
           currentPage,
