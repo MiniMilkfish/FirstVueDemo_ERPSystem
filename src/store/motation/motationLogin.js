@@ -29,7 +29,6 @@ export default {
     },
     // 登录窗体信息提交
     [ACTION_TYPES.LOGIN_FORM_SUBMIT](state, payload) {
-        console.log(ACTION_TYPES.LOGIN_FORM_SUBMIT, payload);
         state.AuthInfo.authName = payload.name;
         state.AuthInfo.authPass = payload.pass;
         state.AuthInfo.validated = true;
