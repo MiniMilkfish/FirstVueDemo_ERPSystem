@@ -8,34 +8,34 @@ export default {
         {
             title: '序号',
             width: 200,
-            key: 'a',
-            dataIndex: 'a',
+            key: 'supplierid',
+            dataIndex: 'supplierid',
             align: 'center',
         }, {
             title: '供应商名称',
             width: 200,
-            key: 'b',
-            dataIndex: 'b',
-        }, {
-            title: '供货配件',
-            width: 200,
-            key: 'c',
-            dataIndex: 'c',
+            key: 'suppliername',
+            dataIndex: 'suppliername',
+        // }, {
+        //     title: '供货配件',
+        //     width: 200,
+        //     key: 'c',
+        //     dataIndex: 'c',
         }, {
             title: '简写编码',
             width: 200,
-            key: 'd',
-            dataIndex: 'd',
-        }, {
-            title: '已购数量',
-            width: 200,
-            key: 'e',
-            dataIndex: 'e',
+            key: 'shortcode',
+            dataIndex: 'shortcode',
+        // }, {
+        //     title: '已购数量',
+        //     width: 200,
+        //     key: 'e',
+        //     dataIndex: 'e',
         }, {
             title: '等级',
             width: 200,
-            key: 'f',
-            dataIndex: 'f',
+            key: 'level',
+            dataIndex: 'level',
         }
     ]
 }

@@ -385,7 +385,7 @@
 
 <script>
   import { defineComponent, reactive, ref, toRaw } from "vue";
-  import CONSTANT_PRODUCT_MANAGEMENT from "../utils/constantProductManagement";
+  import CONSTANT_PRODUCT_MANAGEMENT from "../utils/constantProductClassification";
 
   let data = [];
   for (let i = 0; i < 120; i++) {
@@ -602,26 +602,5 @@
 <style scoped>
   .demo-page-header :deep(tr:last-child td) {
     padding-bottom: 0;
-  }
-</style>
-<style>
-  .avatar-uploader > .ant-upload {
-    width: 128px;
-    height: 128px;
-  }
-  .ant-upload-select-picture-card i {
-    font-size: 32px;
-    color: #999;
-  }
-
-  .ant-upload-select-picture-card .ant-upload-text {
-    margin-top: 8px;
-    color: #666;
-  }
-
-  .edit_modal_filelist {
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    padding: 0 6px 10px;
   }
 </style>

@@ -54,11 +54,11 @@
     v-model:visible="modifyModalVisible"
     :title="'计量单位 ' + modalType"
     width="600px"
-    @ok="addModalSubmit"
+    @ok="modifyModalSubmit"
   >
     <template #footer>
       <a-button key="back" @click="modifyModalClose">关闭</a-button>
-      <a-button key="submit" type="primary" @click="addModalSubmit"
+      <a-button key="submit" type="primary" @click="modifyModalSubmit"
         >提交</a-button
       >
     </template>
@@ -85,7 +85,7 @@
   import { defineComponent, reactive, ref } from "vue";
   import CONSTANT_UNIT_OF_MEASUREMENT from "../utils/constantUnitOfMeasurement";
   import ACTION_TYPES from "../store/constantActionTypes";
-  import CONSTANT_DATA from "../utils/contantData";
+  import CONSTANT_DATA from "../utils/constantData";
 
   export default defineComponent({
     data() {
@@ -100,7 +100,6 @@
         formRef,
         unitFormState,
         modifyModalVisible,
-        contractId: "",
         columns: CONSTANT_UNIT_OF_MEASUREMENT.TABLE_COLUMNS,
         labelCol: { style: { width: "120px", textAlign: "left" } },
         wrapperCol: { span: 24 },
@@ -131,7 +130,7 @@
       },
     },
     methods: {
-      addModalSubmit() {
+      modifyModalSubmit() {
         let _this = this;
         this.$refs.formRef
           .validate()
@@ -213,7 +212,7 @@
       },
     },
     mounted() {
-      // 销售合同列表初始化
+      // 计量单位列表查询初始化
       this.handleQueryUnitOfMeasurementList();
     },
   });
@@ -222,27 +221,5 @@
 <style scoped>
   .demo-page-header :deep(tr:last-child td) {
     padding-bottom: 0;
-  }
-</style>
-
-<style>
-  .avatar-uploader > .ant-upload {
-    width: 128px;
-    height: 128px;
-  }
-  .ant-upload-select-picture-card i {
-    font-size: 32px;
-    color: #999;
-  }
-
-  .ant-upload-select-picture-card .ant-upload-text {
-    margin-top: 8px;
-    color: #666;
-  }
-
-  .edit_modal_filelist {
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    padding: 0 6px 10px;
   }
 </style>

@@ -1,47 +1,43 @@
-<!-- 入库出库 组件 -->
+<!-- 出入库表 组件 -->
 <template>
   <div class="page_control_container">
     <div class="page_condition">
       <a-space>
         <a-select
           ref="select"
-          v-model:value="formState.a"
-          @focus="focus"
-          @change="handleChange"
+          style="width: 200px"
+          placeholder="所属仓库"
+          v-model:value="searchCondition.warehouseid"
         >
-          <a-select-option value="a">全部仓库</a-select-option>
-          <a-select-option value="b">主仓库</a-select-option>
-          <a-select-option value="c">杭州仓库</a-select-option>
+          <a-select-option
+            v-for="item in getWareHouseList"
+            :key="item.id"
+            :value="item.id"
+            >{{ item.warehousename }}</a-select-option
+          >>
         </a-select>
-        <a-input v-model:value="formState.b" placeholder="产品/配件名称" />
-        <a-select
-          ref="select"
-          v-model:value="formState.c"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="a">入库</a-select-option>
-          <a-select-option value="b">出库</a-select-option>
+        <a-input placeholder="产品/配件名称" />
+        <a-select ref="select" style="width: 200px" placeholder="出/入库类别">
+          <a-select-option
+            v-for="item in stockType"
+            :key="item.key"
+            :value="item.key"
+            >{{ item.label }}</a-select-option
+          >
         </a-select>
       </a-space>
     </div>
     <div class="page_condition_controler">
-      <a-button type="primary">查询</a-button>
+      <a-button type="primary" @click="handleQueryStockInAndStockOutList"
+        >查询</a-button
+      >
     </div>
   </div>
   <div class="page_result">
     <div class="result_extra_control">
-      <a-space>
-        <a-button type="primary" size="small" @click="showStockInModal"
-          >入库</a-button
-        >
-        <a-button type="primary" size="small" @click="showStockOutModal"
-          >出库</a-button
-        >
-        <a-button type="primary" size="small" @click="showEditModal"
-          >仓库设置</a-button
-        >
-      </a-space>
+      <a-button type="primary" size="small" @click="modifyModalShow"
+        >添加</a-button
+      >
     </div>
     <a-table
       :columns="[
@@ -55,565 +51,411 @@
           fixed: 'right',
         },
       ]"
-      :data-source="data"
-      :scroll="{ x: 2000, y: tableHeight }"
-      :pagination="{ showQuickJumper: true }"
+      :data-source="getStockInAndStockOutListTableDatas.data"
+      :scroll="{ x: 600, y: tableHeight }"
+      :pagination="{
+        showQuickJumper: true,
+        defaultPageSize: defaultPageSize,
+        pageSizeOptions: pageSizeOptions,
+        total: getStockInAndStockOutListTableDatas.total,
+        current: getStockInAndStockOutListTableDatas.activePage,
+        onChange: handleQueryStockInAndStockOutList,
+      }"
     >
-      <template #bodyCell="{ column }">
+      <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'operation'">
           <a-space>
-            <a-button type="primary" size="small" @click="showEditModal"
-              >查看</a-button
+            <a-button
+              type="primary"
+              size="small"
+              @click="modifyModalShow(record.id, record.goodsname)"
+              >编辑</a-button
             >
-            <a-button danger size="small">删除</a-button>
+            <a-popconfirm
+              title="确定移除当前出入库嘛?"
+              @confirm="inventoryAlarmSettingsTableRowDelete(record.id)"
+            >
+              <a-button danger size="small">删除</a-button>
+            </a-popconfirm>
           </a-space>
         </template>
       </template>
     </a-table>
   </div>
 
-  <!-- 入库 -->
+  <!-- 新增 & 编辑 出入库 -->
   <a-modal
-    v-model:visible="stockInModalVisible"
-    title="入库"
-    width="1000px"
-    @ok="stockInModalSubmit"
+    v-model:visible="modifyModalVisible"
+    :title="'出入库列表 ' + modalType"
+    width="600px"
+    @ok="modifyModalSubmit"
   >
     <template #footer>
-      <a-button key="back" @click="stockInModalClose">关闭</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="stockInModalSubmit"
+      <a-button key="back" @click="modifyModalClose">关闭</a-button>
+      <a-button key="submit" type="primary" @click="modifyModalSubmit"
         >提交</a-button
       >
     </template>
     <a-form
       ref="formRef"
-      :model="formState"
       layout="horizontal"
       name="form_in_modal"
+      :rules="rules"
+      :model="getStockInAndStockOutListDetail"
       :label-col="labelCol"
       :wrapper-col="wrapperCol"
     >
-      <a-form-item name="a" label="类别">
-        <a-radio-group v-model:value="formState.a">
-          <a-radio :value="1">配件</a-radio>
-          <a-radio :value="2">产品</a-radio>
-          <a-radio :value="3">定制加工件</a-radio>
-          <a-radio :value="4">半成品</a-radio>
-        </a-radio-group>
-      </a-form-item>
-      <a-form-item name="c" label="仓库">
-        <a-select
-          ref="select"
-          v-model:value="formState.a"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="a">全部仓库</a-select-option>
-          <a-select-option value="b">主仓库</a-select-option>
-          <a-select-option value="c">杭州仓库</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="c" label="所属分类">
-        <a-select
-          ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
-          <a-select-option value="3">3</a-select-option>
-          <a-select-option value="4">4</a-select-option>
-          <a-select-option value="5">5</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="c" label="配件状态">
-        <a-select
-          ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="1">全新</a-select-option>
-          <a-select-option value="2">返修</a-select-option>
-          <a-select-option value="3">报废</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="c" label="型号">
-        <a-select
-          ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
-          <a-select-option value="3">3</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="a" label="产品/配件名称">
+      <a-form-item name="sparepartname" label="出入库名称">
         <a-input
-          v-model:value="formState.a"
-          placeholder="请填写产品/配件名称"
+          v-model:value="getStockInAndStockOutListDetail.sparepartname"
+          placeholder="请填写出入库名称"
         />
       </a-form-item>
-      <a-form-item name="c" label="供应商">
+      <a-form-item name="sparepartmodel" label="出入库型号">
+        <a-input
+          v-model:value="getStockInAndStockOutListDetail.sparepartmodel"
+          placeholder="请填写出入库型号"
+        />
+      </a-form-item>
+      <a-form-item name="spareparttypeid" label="出入库类型">
         <a-select
           ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
+          v-model:value="getStockInAndStockOutListDetail.spareparttypeid"
         >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
+          <a-select-option
+            v-for="item in getProductClassificationList"
+            :key="item.id"
+            :value="item.id"
+            >{{ item.typename }}</a-select-option
+          >
         </a-select>
       </a-form-item>
-      <a-form-item name="e" label="标签">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="逐行输入，一行一台设备"
-          auto-size
-          style="width: 100%"
+      <a-form-item name="supplierid" label="供应商">
+        <a-select
+          ref="select"
+          v-model:value="getStockInAndStockOutListDetail.supplierid"
+          placeholder="请选择供应商"
+        >
+          <a-select-option
+            v-for="item in getSupplyChannelList"
+            :key="item.supplierid"
+            :value="item.supplierid"
+            >{{ item.suppliername }}</a-select-option
+          >
+        </a-select>
+      </a-form-item>
+      <a-form-item name="unitid" label="单位">
+        <a-select
+          ref="select"
+          v-model:value="getStockInAndStockOutListDetail.unitid"
+        >
+          <a-select-option
+            v-for="item in getUnitOfMeasurementList"
+            :key="item.id"
+            :value="item.id"
+            >{{ item.unitname }}</a-select-option
+          >
+        </a-select>
+      </a-form-item>
+      <a-form-item name="specialflag" label="出入库标识">
+        <a-select
+          ref="select"
+          v-model:value="getStockInAndStockOutListDetail.specialflag"
+          placeholder="请选择出入库标识"
+        >
+          <a-select-option
+            v-for="item in sparepartFlag"
+            :key="item.key"
+            :value="item.key"
+            >{{ item.label }}</a-select-option
+          >
+        </a-select>
+      </a-form-item>
+      <a-form-item name="sparepartpriceamount" label="出入库单价">
+        <a-input
+          v-model:value="getStockInAndStockOutListDetail.sparepartpriceamount"
+          placeholder="请填写出入库单价"
         />
       </a-form-item>
-      <a-form-item name="b" label="质保范围">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="a" label="数量">
-        <a-input-group compact>
-          <a-input
-            v-model:value="formState.a"
-            style="width: 20%"
-            placeholder="工地编号"
-          />
-          <a-select
-            ref="select"
-            v-model:value="formState.g"
-            @focus="focus"
-            @change="handleChange"
-          >
-            <a-select-option value="1">单位</a-select-option>
-          </a-select>
-        </a-input-group>
-      </a-form-item>
-      <a-form-item name="a" label="批次">
-        <a-input v-model:value="formState.a" placeholder="请填写批次" />
-      </a-form-item>
-      <a-form-item name="e" label="入库时间">
-        <a-date-picker v-model:value="formState.e" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="e" label="备注">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="备注"
-          auto-size
-          style="width: 100%"
+      <a-form-item name="remark" label="备注">
+        <a-input
+          v-model:value="getStockInAndStockOutListDetail.remark"
+          placeholder="请填写备注"
         />
       </a-form-item>
     </a-form>
-  </a-modal>
-
-  <!-- 出库 -->
-  <a-modal
-    v-model:visible="stockOutModalVisible"
-    title="出库"
-    width="1000px"
-    @ok="stockOutModalSubmit"
-  >
-    <template #footer>
-      <a-button key="back" @click="stockOutModalClose">关闭</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="stockOutModalSubmit"
-        >提交</a-button
-      >
-    </template>
-    <a-form
-      ref="formRef"
-      :model="formState"
-      layout="horizontal"
-      name="form_in_modal"
-      :label-col="labelCol"
-      :wrapper-col="wrapperCol"
-    >
-      <a-form-item name="a" label="类别">
-        <a-radio-group v-model:value="formState.a">
-          <a-radio :value="1">配件</a-radio>
-          <a-radio :value="2">产品</a-radio>
-          <a-radio :value="3">定制加工件</a-radio>
-          <a-radio :value="4">半成品</a-radio>
-        </a-radio-group>
-      </a-form-item>
-      <a-form-item name="c" label="仓库">
-        <a-select
-          ref="select"
-          v-model:value="formState.a"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="a">全部仓库</a-select-option>
-          <a-select-option value="b">主仓库</a-select-option>
-          <a-select-option value="c">杭州仓库</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="c" label="所属分类">
-        <a-select
-          ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
-          <a-select-option value="3">3</a-select-option>
-          <a-select-option value="4">4</a-select-option>
-          <a-select-option value="5">5</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="c" label="型号">
-        <a-select
-          ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
-          <a-select-option value="3">3</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="a" label="产品/配件名称">
-        <a-input
-          v-model:value="formState.a"
-          placeholder="请填写产品/配件名称"
-        />
-      </a-form-item>
-      <a-form-item name="c" label="供应商">
-        <a-select
-          ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="e" label="标签">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="逐行输入，一行一台设备"
-          auto-size
-          style="width: 100%"
-        />
-      </a-form-item>
-      <a-form-item name="b" label="质保范围">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="a" label="数量">
-        <a-input-group compact>
-          <a-input
-            v-model:value="formState.a"
-            style="width: 20%"
-            placeholder="工地编号"
-          />
-          <a-select
-            ref="select"
-            v-model:value="formState.g"
-            @focus="focus"
-            @change="handleChange"
-          >
-            <a-select-option value="1">单位</a-select-option>
-          </a-select>
-        </a-input-group>
-      </a-form-item>
-      <a-form-item name="a" label="批次">
-        <a-input v-model:value="formState.a" placeholder="请填写批次" />
-      </a-form-item>
-      <a-form-item name="e" label="入库时间">
-        <a-date-picker v-model:value="formState.e" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="e" label="备注">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="备注"
-          auto-size
-          style="width: 100%"
-        />
-      </a-form-item>
-    </a-form>
-  </a-modal>
-
-  <!-- 仓库设置 -->
-  <a-modal
-    v-model:visible="editModalVisible"
-    title="仓库设置"
-    width="1000px"
-    @ok="stockInModalSubmit"
-  >
-    <template #footer>
-      <a-button key="back" @click="editModalClose">关闭</a-button>
-    </template>
-    <a-table
-      :columns="[
-        {
-          title: '序号',
-          width: 200,
-          key: 'a',
-          dataIndex: 'a',
-          align: 'center',
-        },
-        {
-          title: '仓库名称',
-          width: 200,
-          key: 'b',
-          dataIndex: 'b',
-        },
-        {
-          title: '操作',
-          width: 150,
-          key: 'operation',
-          align: 'center',
-          dataIndex: 'operation',
-          fixed: 'right',
-        },
-      ]"
-      :data-source="[]"
-      :scroll="{ x: 600 }"
-      :pagination="{ showQuickJumper: true }"
-    >
-      <template #bodyCell="{ column }">
-        <template v-if="column.key === 'operation'">
-          <a-space>
-            <a-button type="primary" size="small" @click="showEditModal"
-              >编辑</a-button
-            >
-            <a-button danger size="small">删除</a-button>
-          </a-space>
-        </template>
-      </template>
-    </a-table>
   </a-modal>
 </template>
 
 <script>
-  import { defineComponent, reactive, ref, toRaw } from "vue";
+  import { defineComponent, ref } from "vue";
   import CONSTANT_STOCK_IN_AND_STOCK_OUT from "../utils/constantStockInAndStockOut";
-
-  let data = [];
-  for (let i = 0; i < 120; i++) {
-    let rowObj = { key: i };
-
-    for (let j = 0; j < 26; j++) {
-      rowObj[String.fromCharCode(97 + j)] = "占位";
-    }
-    data.push(rowObj);
-  }
+  import ACTION_TYPES from "../store/constantActionTypes";
+  import CONSTANT_DATA from "../utils/constantData";
+  import { isNumber } from "../utils/common";
 
   export default defineComponent({
     data() {
-      return {
-        contractId: "",
-        data,
-        columns: CONSTANT_STOCK_IN_AND_STOCK_OUT.TABLE_COLUMNS,
-      };
-    },
-    setup() {
       const formRef = ref();
-      const loading = ref(false);
-      const stockInModalVisible = ref(false);
-      const stockOutModalVisible = ref(false);
-      const editModalVisible = ref(false);
-      const stockModalVisible = ref(false);
-      const fileList = ref([]);
-      const editModalFileList = ref([
-        {
-          uid: "1",
-          name: "xxxxxxxxxxxxxxxxxxx.pdf",
-          status: "done",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/xxx.png",
-        },
-        {
-          uid: "2",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.zip",
-          status: "done",
-          url: "http://www.baidu.com/yyy.png",
-        },
-        {
-          uid: "3",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.png",
-          status: "error",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/zzz.png",
-        },
-      ]);
-      const activeKey = ref(["1"]);
-
-      const formState = reactive({
-        a: "a",
-        b: "",
-        c: "a",
-        d: "",
-        e: "",
-        f: "",
-        g: "",
-        h: "",
-        i: "",
-        modifier: "public",
-      });
-
-      const showStockInModal = () => {
-        stockInModalVisible.value = true;
-      };
-
-      const showStockOutModal = () => {
-        stockOutModalVisible.value = true;
-      };
-
-      const stockInModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              stockInModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const stockOutModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              stockOutModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const stockInModalClose = () => {
-        stockInModalVisible.value = false;
-      };
-
-      const stockOutModalClose = () => {
-        stockOutModalVisible.value = false;
-      };
-
-      const showEditModal = () => {
-        editModalVisible.value = true;
-      };
-
-      const editModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              editModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const editModalClose = () => {
-        editModalVisible.value = false;
-      };
-
-      const stockModalShow = () => {
-        console.log("123123123");
-        stockModalVisible.value = true;
-      };
-
-      const stockModalClose = () => {
-        stockModalVisible.value = false;
-      };
-
-      const handleChange = value => {
-        console.log(`selected ${value}`);
-      };
-
-      const focus = () => {
-        console.log("focus");
-      };
+      const modifyModalVisible = ref(false);
 
       return {
-        loading,
-        stockInModalVisible,
-        stockOutModalVisible,
-        editModalVisible,
-        stockModalVisible,
-        formState,
         formRef,
-        labelCol: { style: { width: "120px" } },
+        modifyModalVisible,
+        columns: CONSTANT_STOCK_IN_AND_STOCK_OUT.TABLE_COLUMNS,
+        labelCol: { style: { width: "120px", textAlign: "left" } },
         wrapperCol: { span: 24 },
-        fileList,
-        headers: {
-          authorization: "authorization-text",
+        rules: {
+          sparepartname: {
+            required: true,
+            message: "出入库名称为必填项",
+          },
+          sparepartmodel: {
+            required: true,
+            message: "出入库型号为必填项",
+          },
+          spareparttypeid: {
+            required: true,
+            message: "出入库类型为必选项",
+          },
+          supplierid: {
+            required: true,
+            message: "供应商为必选项",
+          },
+          unitid: {
+            required: true,
+            message: "单位为必选项",
+          },
+          specialflag: {
+            required: true,
+            message: "出入库标识为必选项",
+          },
+          sparepartpriceamount: {
+            required: true,
+            message: "出入库单价为必填项",
+          },
         },
-        editModalFileList,
-        activeKey,
-        showStockInModal,
-        stockInModalSubmit,
-        stockInModalClose,
-        showStockOutModal,
-        stockOutModalSubmit,
-        stockOutModalClose,
-        showEditModal,
-        editModalSubmit,
-        editModalClose,
-        stockModalShow,
-        stockModalClose,
-        handleChange,
-        focus,
+        modalType: "",
+        defaultPageSize: CONSTANT_STOCK_IN_AND_STOCK_OUT.TABLE_SHOW_SIZE,
+        pageSizeOptions: CONSTANT_STOCK_IN_AND_STOCK_OUT.TABLE_SHOW_SIZE_ARRAY,
+        warnTypeList: CONSTANT_DATA.WARN_TYPE,
+        sparepart: CONSTANT_DATA.SPAREPART_FLAG,
+        sparepartFlag: CONSTANT_DATA.SPAREPART_FLAG,
+        stockType: CONSTANT_DATA.STOCK_TYPE,
+        searchCondition: {
+          warehouseid: "",
+          goodsid: "",
+          stocktype: "",
+        },
       };
     },
     computed: {
       tableHeight() {
         return (
           this.$store.state.moduleLogin.LoginFormDimensions.pageContentHeight -
-          104 -
+          14 -
           12 -
           55 -
-          64 -
           40
         );
       },
+      getStockInAndStockOutListTableDatas() {
+        return this.$store.state.moduleStockInAndStockOut.tableData;
+      },
+      getStockInAndStockOutListDetail() {
+        return this.$store.state.moduleStockInAndStockOut
+          .stockInAndStockOutListDetail;
+      },
+      getProductClassificationList() {
+        return this.$store.state.moduleStockInAndStockOut
+          .productClassificationList;
+      },
+      getUnitOfMeasurementList() {
+        return this.$store.state.moduleStockInAndStockOut.unitOfMeasurementList;
+      },
+      getAccessoryList() {
+        return this.$store.state.moduleStockInAndStockOut.accessoryList;
+      },
+      getSupplyChannelList() {
+        return this.$store.state.moduleStockInAndStockOut.supplyChannelList;
+      },
+      getWareHouseList() {
+        return this.$store.state.moduleStockInAndStockOut.warehouseList;
+      },
+    },
+    methods: {
+      modifyModalSubmit() {
+        let _this = this;
+        this.$refs.formRef
+          .validate()
+          .then(res => {
+            _this.$data.modifyModalVisible = false;
+
+            _this.$store.dispatch(ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_MODIFY, {
+              ...res,
+              actionFailure: _this.actionFailure,
+              actionSuccess: _this.actionSuccess,
+              actionCallback: _this.handleQueryStockInAndStockOutList,
+            });
+          })
+          .catch(({ errorFields }) => {
+            if (errorFields && errorFields.length > 0) {
+              let description = errorFields[0].errors[0];
+              _this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+                type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+                message: "验证错误",
+                description: description,
+              });
+            }
+          });
+      },
+      handleQueryStockInAndStockOutList(currentPage, showPageSize) {
+        currentPage =
+          currentPage && isNumber(currentPage)
+            ? currentPage
+            : this.$store.state.moduleStockInAndStockOut.tableData.activePage;
+        showPageSize =
+          showPageSize && isNumber(showPageSize)
+            ? showPageSize
+            : CONSTANT_STOCK_IN_AND_STOCK_OUT.TABLE_SHOW_SIZE;
+
+        let warehouseid = this.$data.searchCondition.warehouseid,
+          goodsid = this.$data.searchCondition.goodsid,
+          stocktype = this.$data.searchCondition.stocktype;
+
+        this.$store.dispatch(ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_LIST, {
+          actionFailure: this.actionFailure,
+          currentPage,
+          showPageSize,
+          warehouseid,
+          goodsid,
+          stocktype,
+        });
+      },
+      actionFailure(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+          message: "出入库" + this.modalType,
+          description: description,
+        });
+      },
+      actionSuccess(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.SUCCESS,
+          message: "出入库" + this.modalType,
+          description: description,
+        });
+      },
+      modifyModalShow(id, name) {
+        let _this = this;
+        this.modifyModalVisible = true;
+
+        if (name && name.length > 0) {
+          this.modalType = "编辑";
+
+          // 查询出入库详情
+          this.handleQueryStockInAndStockOutListDetail(id);
+        } else {
+          this.$store.commit(ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_DETAIL_CLEAR);
+          this.modalType = "新增";
+          setTimeout(() => {
+            _this.$refs.formRef.resetFields();
+          });
+        }
+      },
+      modifyModalClose() {
+        this.modifyModalVisible = false;
+      },
+      inventoryAlarmSettingsTableRowDelete(id) {
+        let _this = this;
+        this.$store.dispatch(ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_DELETE, {
+          id,
+          actionFailure: _this.actionFailure,
+          actionSuccess: _this.actionSuccess,
+          actionCallback: _this.handleQueryStockInAndStockOutList,
+        });
+      },
+      handleQueryStockInAndStockOutListDetail(id) {
+        this.$store.dispatch(ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_DETAIL, id);
+      },
+      handleQueryProductClassificationList() {
+        // this.$store.dispatch(
+        //   ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_PAGE_STOCK_IN_AND_STOCK_OUT_CLASSIFICATION_LIST
+        // );
+      },
+      handleQueryUnitOfMeasurementList() {
+        this.$store.dispatch(
+          ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_PAGE_UNIT_OF_MEASUREMENT_LIST
+        );
+      },
+      handleQuerySupplyChannelList() {
+        // this.$store.dispatch(
+        //   ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_PAGE_SUPPLY_CHANNEL_LIST
+        // );
+      },
+      handleAccessoryListOnSelect(accessoryId, bomsListId) {
+        console.log(accessoryId, bomsListId);
+        // this.$store.commit(
+        //   ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_PAGE_STOCK_IN_AND_STOCK_OUT_UNIT_MATCHED,
+        //   {
+        //     accessoryId,
+        //     bomsListId,
+        //   }
+        // );
+      },
+      handleAddDevice(deviceTypeId, unit) {
+        // this.$store.commit(
+        //   ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_DETAIL_DEVICE_BOMLIST_ADD,
+        //   {
+        //     deviceTypeId,
+        //     unit,
+        //   }
+        // );
+        console.log(deviceTypeId, unit);
+      },
+      handleRemoveDevice(bomItem) {
+        console.log(bomItem);
+        // this.$store.commit(
+        //   ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_DETAIL_DEVICE_BOMLIST_REMOVE,
+        //   bomItem.id
+        // );
+      },
+      handleQueryWarehouseList() {
+        this.$store.dispatch(
+          ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_WAREHOUSE_LIST
+        );
+      },
+      handleQueryProductList() {
+        this.$store.dispatch(ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_PRODUCT_LIST);
+      },
+      handleQueryAccessoryList() {
+        this.$store.dispatch(
+          ACTION_TYPES.STOCK_IN_AND_STOCK_OUT_ACCESSORY_LIST
+        );
+      },
+    },
+    mounted() {
+      // 出入库列表查询初始化
+      this.handleQueryStockInAndStockOutList();
+
+      // 仓库列表
+      this.handleQueryWarehouseList();
+
+      // 计量单位列表初始化
+      this.handleQueryUnitOfMeasurementList();
+
+      // 产品列表
+      this.handleQueryProductList();
+
+      // 配件列表
+      this.handleQueryAccessoryList();
+
+      // // 出入库分类列表初始化
+      // this.handleQueryProductClassificationList();
+
+      // // 供应商列表初始化
+      // this.handleQuerySupplyChannelList();
     },
   });
 </script>
@@ -621,26 +463,5 @@
 <style scoped>
   .demo-page-header :deep(tr:last-child td) {
     padding-bottom: 0;
-  }
-</style>
-<style>
-  .avatar-uploader > .ant-upload {
-    width: 128px;
-    height: 128px;
-  }
-  .ant-upload-select-picture-card i {
-    font-size: 32px;
-    color: #999;
-  }
-
-  .ant-upload-select-picture-card .ant-upload-text {
-    margin-top: 8px;
-    color: #666;
-  }
-
-  .edit_modal_filelist {
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    padding: 0 6px 10px;
   }
 </style>

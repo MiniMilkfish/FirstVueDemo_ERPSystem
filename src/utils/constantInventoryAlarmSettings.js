@@ -8,24 +8,24 @@ export default {
         {
             title: '序号',
             width: 200,
-            key: 'a',
-            dataIndex: 'a',
+            key: 'id',
+            dataIndex: 'id',
             align: 'center',
         }, {
             title: '产品/配件',
             width: 200,
-            key: 'b',
-            dataIndex: 'b',
+            key: 'typename',
+            dataIndex: 'typename',
         }, {
             title: '型号',
             width: 200,
-            key: 'c',
-            dataIndex: 'c',
+            key: 'typemodel',
+            dataIndex: 'typemodel',
         }, {
             title: '报警限值',
             width: 200,
-            key: 'd',
-            dataIndex: 'd',
+            key: 'warnvalue',
+            dataIndex: 'warnvalue',
         }
     ]
 }

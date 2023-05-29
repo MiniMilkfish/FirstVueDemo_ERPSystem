@@ -6,36 +6,36 @@ export default {
     TABLE_SHOW_SIZE_ARRAY: ['10', '20', '50', '100'],
     TABLE_COLUMNS: [
         {
-            title: '序号',
+            title: '所属仓库',
             width: 200,
-            key: 'a',
-            dataIndex: 'a',
+            key: 'warehousename',
+            dataIndex: 'warehousename',
             align: 'center',
         }, {
             title: '产品名称',
             width: 200,
-            key: 'b',
-            dataIndex: 'b',
+            key: 'goodsname',
+            dataIndex: 'goodsname',
         }, {
             title: '设备类别',
             width: 200,
-            key: 'c',
-            dataIndex: 'c'
+            key: 'goodstype',
+            dataIndex: 'goodstype'
         }, {
             title: '数量',
             width: 200,
-            key: 'd',
-            dataIndex: 'd'
+            key: 'stockcount',
+            dataIndex: 'stockcount'
         }, {
             title: '单价',
             width: 200,
-            key: 'e',
-            dataIndex: 'e'
+            key: 'priceamount',
+            dataIndex: 'priceamount'
         }, {
             title: '金额',
             width: 200,
-            key: 'f',
-            dataIndex: 'f'
+            key: 'goodamount',
+            dataIndex: 'goodamount'
         }
     ]
 }

@@ -3,17 +3,30 @@
   <div class="page_control_container">
     <div class="page_condition">
       <a-space>
-        <a-range-picker v-model:value="formState.b" />
-        <a-input v-model:value="formState.c" placeholder="项目名称" />
+        <a-range-picker
+          v-model:value="searchCondition.installRangeDate"
+          :placeholder="['安装开始时间', '安装结束时间']"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+        />
+        <a-input
+          v-model:value="searchCondition.projectName"
+          placeholder="项目名称"
+          allow-clear
+        />
       </a-space>
     </div>
     <div class="page_condition_controler">
-      <a-button type="primary">搜索</a-button>
+      <a-button
+        type="primary"
+        @click="handleQueryOperationAndMaintenanceTimeList"
+        >搜索</a-button
+      >
     </div>
   </div>
   <div class="page_result">
     <div class="result_extra_control">
-      <a-button type="primary" size="small" @click="showAddModal"
+      <a-button type="primary" size="small" @click="modifyModalShow"
         >添加</a-button
       >
     </div>
@@ -29,80 +42,125 @@
           fixed: 'right',
         },
       ]"
-      :data-source="data"
-      :scroll="{ x: 2000, y: tableHeight }"
-      :pagination="{ showQuickJumper: true }"
+      :data-source="getOperationAndMaintenanceTimeListTableDatas.data"
+      :scroll="{ x: 600, y: tableHeight }"
+      :pagination="{
+        showQuickJumper: true,
+        defaultPageSize: defaultPageSize,
+        pageSizeOptions: pageSizeOptions,
+        total: getOperationAndMaintenanceTimeListTableDatas.total,
+        current: getOperationAndMaintenanceTimeListTableDatas.activePage,
+        onChange: handleQueryOperationAndMaintenanceTimeList,
+      }"
     >
-      <template #bodyCell="{ column }">
+      <template #bodyCell="{ text, column, record }">
+        <template v-if="column.key === 'remark'">
+          <template v-if="text && text.length > 20">
+            <a-tooltip color="blue">
+              <template #title>{{ text }}</template>
+              {{ text.slice(0, 20) + "..." }}
+            </a-tooltip>
+          </template>
+        </template>
         <template v-if="column.key === 'operation'">
           <a-space>
-            <a-button type="primary" size="small" @click="showEditModal"
+            <a-button
+              type="primary"
+              size="small"
+              @click="modifyModalShow(record.id, record.projectname)"
               >编辑</a-button
             >
-            <a-button danger size="small">撤销</a-button>
+            <a-popconfirm
+              title="确定移除当前运维安排嘛?"
+              @confirm="categoryOfMeasurementTableRowDelete(record.id)"
+            >
+              <a-button danger size="small">删除</a-button>
+            </a-popconfirm>
           </a-space>
         </template>
       </template>
     </a-table>
   </div>
 
-  <!-- 新增 运维时间 -->
+  <!-- 运维时间 新增 & 编辑 -->
   <a-modal
-    v-model:visible="addModalVisible"
-    title="运维时间 新增"
+    v-model:visible="modifyModalVisible"
+    :title="'运维时间 ' + modalType"
     width="600px"
-    @ok="addModalSubmit"
+    :keyboard="modalClosableExtra"
+    :maskClosable="modalClosableExtra"
+    @ok="modifyModalSubmit"
   >
     <template #footer>
-      <a-button key="back" @click="addModalClose">关闭</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="addModalSubmit"
+      <a-button key="back" @click="modifyModalClose">关闭</a-button>
+      <a-button key="submit" type="primary" @click="modifyModalSubmit"
         >提交</a-button
       >
     </template>
     <a-form
       ref="formRef"
-      :model="formState"
+      :model="getOperationAndMaintenanceTimeDetail"
       layout="horizontal"
       name="form_in_modal"
       :label-col="labelCol"
       :wrapper-col="wrapperCol"
     >
-      <a-form-item name="a" label="项目名称">
-        <a-input v-model:value="formState.a" placeholder="请填写项目名称" />
+      <a-form-item name="projectname" label="项目名称">
+        <a-select
+          v-model:value="getOperationAndMaintenanceTimeDetail.salescontractid"
+          show-search
+          placeholder="请填写项目名称"
+          :options="getMarketingContractList"
+          @change="handleProjectSelect"
+        ></a-select>
       </a-form-item>
-      <a-form-item name="b" label="和客户沟通的安装时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
+      <a-form-item name="installRangeDate" label="和客户沟通的安装时间">
+        <a-range-picker
+          v-model:value="getOperationAndMaintenanceTimeDetail.installRangeDate"
+          style="width: 100%"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+        />
       </a-form-item>
-      <a-form-item name="b" label="计划现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
+      <a-form-item name="planSurveryRangeDate" label="计划现场勘察时间">
+        <a-range-picker
+          v-model:value="
+            getOperationAndMaintenanceTimeDetail.planSurveryRangeDate
+          "
+          style="width: 100%"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+        />
       </a-form-item>
-      <a-form-item name="b" label="实际现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
+      <a-form-item name="onsideSurveryRangeDate" label="实际现场勘察时间">
+        <a-range-picker
+          v-model:value="
+            getOperationAndMaintenanceTimeDetail.onsideSurveryRangeDate
+          "
+          style="width: 100%"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+        />
       </a-form-item>
-      <a-form-item name="f" label="实际现场勘察情况">
+      <a-form-item name="surverysitefiles" label="实际现场勘察情况">
         <a-upload
-          v-model:file-list="fileList"
+          :fileList="fileList"
           name="file"
           list-type="picture-card"
           class="avatar-uploader"
           :multiple="true"
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          :headers="headers"
-          @change="handleChange"
+          :beforeUpload="handleBeforeUpload"
+          :remove="handleFileRemove"
+          @preview="handleImagePreviewModalVisible"
         >
-          <div>
-            <loading-outlined v-if="loading"></loading-outlined>
-            <plus-outlined v-else></plus-outlined>
+          <div v-if="fileList.length < 9">
+            <plus-outlined />
           </div>
         </a-upload>
       </a-form-item>
-      <a-form-item name="e" label="备注">
+      <a-form-item name="info" label="备注">
         <a-textarea
-          v-model:value="formState.e"
+          v-model:value="getOperationAndMaintenanceTimeDetail.info"
           placeholder="请填写备注说明"
           auto-size
           style="width: 100%"
@@ -111,244 +169,64 @@
     </a-form>
   </a-modal>
 
-  <!--  运维时间 编辑 -->
+  <!-- 图片预览 -->
   <a-modal
-    v-model:visible="editModalVisible"
-    title="运维时间 编辑"
-    width="600px"
-    @ok="addModalSubmit"
+    :visible="previewVisible"
+    :footer="null"
+    @cancel="handleImagePreviewModalVisible"
   >
-    <template #footer>
-      <a-button key="back" @click="editModalClose">返回</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="editModalSubmit"
-        >提交</a-button
-      >
-    </template>
-    <a-form
-      ref="formRef"
-      :model="formState"
-      layout="horizontal"
-      name="form_in_modal"
-      :label-col="labelCol"
-      :wrapper-col="wrapperCol"
-    >
-      <a-form-item name="a" label="项目名称">
-        <a-input v-model:value="formState.a" placeholder="请填写项目名称" />
-      </a-form-item>
-      <a-form-item name="b" label="和客户沟通的安装时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="b" label="计划现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="b" label="实际现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="f" label="实际现场勘察情况">
-        <a-upload
-          v-model:file-list="fileList"
-          name="file"
-          list-type="picture-card"
-          class="avatar-uploader"
-          :multiple="true"
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          :headers="headers"
-          @change="handleChange"
-        >
-          <div>
-            <loading-outlined v-if="loading"></loading-outlined>
-            <plus-outlined v-else></plus-outlined>
-          </div>
-        </a-upload>
-      </a-form-item>
-      <a-form-item name="e" label="备注">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="请填写备注说明"
-          auto-size
-          style="width: 100%"
-        />
-      </a-form-item>
-    </a-form>
+    <img alt="example" style="width: 100%" :src="previewImage" />
   </a-modal>
 </template>
 
 <script>
-  import { defineComponent, reactive, ref, toRaw } from "vue";
+  import { defineComponent, ref } from "vue";
   import CONSTANT_OPERATION_AND_MAINTENANCE_TIME from "../utils/constantOperationAndMaintenanceTime";
-  import { PlusOutlined, LoadingOutlined } from "@ant-design/icons-vue";
-
-  let data = [];
-  for (let i = 0; i < 120; i++) {
-    let rowObj = { key: i };
-
-    for (let j = 0; j < 26; j++) {
-      rowObj[String.fromCharCode(97 + j)] = "占位";
-    }
-    data.push(rowObj);
-  }
+  import ACTION_TYPES from "../store/constantActionTypes";
+  import CONSTANT_DATA from "../utils/constantData";
+  import { PlusOutlined } from "@ant-design/icons-vue";
+  import ServerConfig from "../config/urlConfig";
+  import { isNumber } from "../utils/common";
 
   export default defineComponent({
     data() {
+      const formRef = ref();
+      const modifyModalVisible = ref(false);
+
       return {
-        contractId: "",
-        data,
+        formRef,
+        modifyModalVisible,
+        fileList: [],
+        labelCol: { style: { width: "160px", textAlign: "right" } },
+        wrapperCol: { span: 24 },
+        rules: {
+          customname: {
+            required: true,
+            message: "客户名称为必填项",
+          },
+          categoryid: {
+            required: true,
+            message: "运维时间为必选项",
+          },
+        },
+        modalType: "",
+        defaultPageSize:
+          CONSTANT_OPERATION_AND_MAINTENANCE_TIME.TABLE_SHOW_SIZE,
+        pageSizeOptions:
+          CONSTANT_OPERATION_AND_MAINTENANCE_TIME.TABLE_SHOW_SIZE_ARRAY,
         columns: CONSTANT_OPERATION_AND_MAINTENANCE_TIME.TABLE_COLUMNS,
+        uploadReqUrl: `${ServerConfig.SERVER_BASE_URL}${ServerConfig.SERVER_API.UPLOAD_FILE}`,
+        previewVisible: false,
+        previewImage: "",
+        modalClosableExtra: false,
+        searchCondition: {
+          installRangeDate: [],
+          projectName: "",
+        },
       };
     },
     components: {
       PlusOutlined,
-      LoadingOutlined,
-    },
-    setup() {
-      const formRef = ref();
-      const loading = ref(false);
-      const addModalVisible = ref(false);
-      const editModalVisible = ref(false);
-      const stockModalVisible = ref(false);
-      const fileList = ref([]);
-      const editModalFileList = ref([
-        {
-          uid: "1",
-          name: "xxxxxxxxxxxxxxxxxxx.pdf",
-          status: "done",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/xxx.png",
-        },
-        {
-          uid: "2",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.zip",
-          status: "done",
-          url: "http://www.baidu.com/yyy.png",
-        },
-        {
-          uid: "3",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.png",
-          status: "error",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/zzz.png",
-        },
-      ]);
-      const activeKey = ref(["1"]);
-
-      const formState = reactive({
-        a: [],
-        b: "",
-        c: "",
-        d: "jack",
-        e: "",
-        f: "",
-        g: "",
-        h: "",
-        i: "",
-        modifier: "public",
-      });
-
-      const showAddModal = () => {
-        addModalVisible.value = true;
-      };
-
-      const addModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              addModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const addModalClose = () => {
-        addModalVisible.value = false;
-      };
-
-      const showEditModal = () => {
-        editModalVisible.value = true;
-      };
-
-      const editModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              editModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const editModalClose = () => {
-        editModalVisible.value = false;
-      };
-
-      const stockModalShow = () => {
-        console.log("123123123");
-        stockModalVisible.value = true;
-      };
-
-      const stockModalClose = () => {
-        stockModalVisible.value = false;
-      };
-
-      const handleChange = value => {
-        console.log(`selected ${value}`);
-      };
-
-      const focus = () => {
-        console.log("focus");
-      };
-
-      return {
-        loading,
-        addModalVisible,
-        editModalVisible,
-        stockModalVisible,
-        formState,
-        formRef,
-        labelCol: { style: { width: "180px", textAlign: "right" } },
-        wrapperCol: { span: 24 },
-        fileList,
-        headers: {
-          authorization: "authorization-text",
-        },
-        editModalFileList,
-        activeKey,
-        showAddModal,
-        addModalSubmit,
-        addModalClose,
-        showEditModal,
-        editModalSubmit,
-        editModalClose,
-        stockModalShow,
-        stockModalClose,
-        handleChange,
-        focus,
-      };
     },
     computed: {
       tableHeight() {
@@ -361,6 +239,201 @@
           40
         );
       },
+      getOperationAndMaintenanceTimeListTableDatas() {
+        return this.$store.state.moduleOperationAndMaintenanceTime.tableData;
+      },
+      getOperationAndMaintenanceTimeDetail() {
+        return this.$store.state.moduleOperationAndMaintenanceTime
+          .operationAndMaintenanceTimeDetail;
+      },
+      getMarketingContractList() {
+        return this.$store.state.moduleGlobal.marketingContractList.map(
+          function (item, index) {
+            return {
+              label: item.projectname,
+              value: item.salescontractid,
+              key: index,
+            };
+          }
+        );
+      },
+    },
+    methods: {
+      handleQueryOperationAndMaintenanceTimeList(currentPage, showPageSize) {
+        currentPage =
+          currentPage && isNumber(currentPage)
+            ? currentPage
+            : this.$store.state.moduleOperationAndMaintenanceTime.tableData
+                .activePage;
+        showPageSize =
+          showPageSize && isNumber(showPageSize)
+            ? showPageSize
+            : CONSTANT_OPERATION_AND_MAINTENANCE_TIME.TABLE_SHOW_SIZE;
+
+        let installRangeDate = this.$data.searchCondition.installRangeDate,
+          projectName = this.$data.searchCondition.projectName;
+
+        this.$store.dispatch(
+          ACTION_TYPES.OPERATION_AND_MAINTENANCE_TIME_LIST_QUERY,
+          {
+            actionFailure: this.actionFailure,
+            currentPage,
+            showPageSize,
+            installRangeDate,
+            projectName,
+          }
+        );
+      },
+      handleQueryOperationAndMaintenanceTimeDetail(id) {
+        this.$store.dispatch(
+          ACTION_TYPES.OPERATION_AND_MAINTENANCE_TIME_DETAIL,
+          {
+            id,
+            handleBuildImageFileList: this.handleBuildImageFileList,
+          }
+        );
+      },
+      handleBuildImageFileList(fileList) {
+        let currentFileList = this.$data.fileList;
+        if (fileList && fileList.length > 0)
+          currentFileList = currentFileList.concat(fileList);
+        this.$data.fileList = currentFileList.map(function (file, index) {
+          return {
+            uid: index,
+            name: file.filename || file.name,
+            status: "done",
+            url: file.filepath || file.url,
+          };
+        });
+      },
+      actionFailure(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+          message: "运维时间" + this.modalType,
+          description: description,
+        });
+      },
+      actionSuccess(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.SUCCESS,
+          message: "运维时间" + this.modalType,
+          description: description,
+        });
+      },
+      modifyModalSubmit() {
+        let _this = this;
+        this.$refs.formRef
+          .validate()
+          .then(res => {
+            _this.$data.modifyModalVisible = false;
+            res.id =
+              _this.$store.state.moduleOperationAndMaintenanceTime.operationAndMaintenanceTimeDetail.id;
+
+            _this.$store.dispatch(
+              ACTION_TYPES.OPERATION_AND_MAINTENANCE_TIME_MODIFY,
+              {
+                ...res,
+                actionFailure: _this.actionFailure,
+                actionSuccess: _this.actionSuccess,
+                actionCallback:
+                  _this.handleQueryOperationAndMaintenanceTimeList,
+              }
+            );
+          })
+          .catch(({ errorFields }) => {
+            if (errorFields && errorFields.length > 0) {
+              let description = errorFields[0].errors[0];
+              _this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+                type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+                message: "验证错误",
+                description: description,
+              });
+            }
+          });
+      },
+      modifyModalShow(id, name) {
+        this.$data.modifyModalVisible = true;
+        this.$data.fileList = [];
+
+        if (name && name.length > 0) {
+          this.$data.modalType = "编辑";
+
+          // 查询客户详情
+          this.handleQueryOperationAndMaintenanceTimeDetail(id);
+        } else {
+          this.$store.commit(
+            ACTION_TYPES.OPERATION_AND_MAINTENANCE_TIME_DETAIL_CLEAR
+          );
+          this.$data.modalType = "新增";
+        }
+      },
+      modifyModalClose() {
+        this.modifyModalVisible = false;
+      },
+      categoryOfMeasurementTableRowDelete(id) {
+        let _this = this;
+        this.$store.dispatch(
+          ACTION_TYPES.OPERATION_AND_MAINTENANCE_TIME_DELETE,
+          {
+            id,
+            actionFailure: _this.actionFailure,
+            actionSuccess: _this.actionSuccess,
+            actionCallback: _this.handleQueryOperationAndMaintenanceTimeList,
+          }
+        );
+      },
+      handleBeforeUpload(file) {
+        this.$store.dispatch(ACTION_TYPES.GLOBAL_UPLOAD_FILE, {
+          file,
+          motationType:
+            ACTION_TYPES.OPERATION_AND_MAINTENANCE_TIME_COMBINE_FILES,
+          handleBuildImageFileList: this.handleBuildImageFileList,
+        });
+        return false;
+      },
+      handleFileRemove(file) {
+        const index = this.$data.fileList.indexOf(file);
+        const newFileList = this.$data.fileList.slice();
+        newFileList.splice(index, 1);
+        this.$data.fileList = newFileList;
+
+        this.$store.commit(
+          ACTION_TYPES.OPERATION_AND_MAINTENANCE_TIME_REMOVE_FILE,
+          file.name
+        );
+      },
+      handleQueryMarketingContractList() {
+        this.$store.dispatch(ACTION_TYPES.GLOBAL_MARKETING_CONTRACT_SHORT_LIST);
+      },
+      handleProjectSelect(value, option) {
+        this.$store.commit(
+          ACTION_TYPES.OPERATION_AND_MAINTENANCE_TIME_CONTRACT_SELECT,
+          {
+            value,
+            option,
+          }
+        );
+      },
+      handleImagePreviewModalVisible(file) {
+        if (this.$data.previewVisible) {
+          this.$data.previewVisible = false;
+          return;
+        }
+
+        if (file && file.url) {
+          this.$data.previewImage = file.url;
+        }
+
+        this.$data.previewVisible = true;
+      },
+    },
+    mounted() {
+      // 运维时间列表初始化
+      this.handleQueryOperationAndMaintenanceTimeList();
+
+      // 销售合同列表初始化
+      this.handleQueryMarketingContractList();
     },
   });
 </script>
@@ -368,26 +441,5 @@
 <style scoped>
   .demo-page-header :deep(tr:last-child td) {
     padding-bottom: 0;
-  }
-</style>
-<style>
-  .avatar-uploader > .ant-upload {
-    width: 128px;
-    height: 128px;
-  }
-  .ant-upload-select-picture-card i {
-    font-size: 32px;
-    color: #999;
-  }
-
-  .ant-upload-select-picture-card .ant-upload-text {
-    margin-top: 8px;
-    color: #666;
-  }
-
-  .edit_modal_filelist {
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    padding: 0 6px 10px;
   }
 </style>

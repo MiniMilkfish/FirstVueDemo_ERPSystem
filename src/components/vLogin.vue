@@ -103,7 +103,7 @@
 <script>
   import { defineComponent, reactive, ref } from "vue";
   import ACTION_TYPES from "../store/constantActionTypes";
-  import CONSTANT_DATA from "../utils/contantData";
+  import CONSTANT_DATA from "../utils/constantData";
 
   export default defineComponent({
     data() {
@@ -175,6 +175,7 @@
       },
       refreshVarificationCode() {
         this.$store.commit(ACTION_TYPES.REFRESH_VARIFICATION_CODE);
+        this.$data.formState.vaildCode = "";
       },
       actionSuccess(description) {
         this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
@@ -191,6 +192,7 @@
         });
 
         this.$store.commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
+        this.refreshVarificationCode();
       },
     },
     computed: {

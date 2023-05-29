@@ -1,5 +1,5 @@
 /**
- * 产品管理
+ * 产品列表
  */
 export default {
     TABLE_SHOW_SIZE: 10,
@@ -8,35 +8,34 @@ export default {
         {
             title: '序号',
             width: 200,
-            key: 'a',
-            dataIndex: 'a',
+            key: 'id',
+            dataIndex: 'id',
             align: 'center',
-            fixed: 'left'
         }, {
             title: '产品名称',
             width: 200,
-            key: 'b',
-            dataIndex: 'b',
+            key: 'devicename',
+            dataIndex: 'devicename',
         }, {
             title: '产品类别',
             width: 200,
-            key: 'c',
-            dataIndex: 'c',
+            key: 'devicetype',
+            dataIndex: 'devicetype',
         }, {
             title: '规格型号',
             width: 200,
-            key: 'd',
-            dataIndex: 'd',
+            key: 'devicemodel',
+            dataIndex: 'devicemodel',
         }, {
             title: '单位',
             width: 200,
-            key: 'e',
-            dataIndex: 'e',
+            key: 'unit',
+            dataIndex: 'unit',
         }, {
             title: '备注',
             width: 200,
-            key: 'f',
-            dataIndex: 'f',
+            key: 'remark',
+            dataIndex: 'remark',
         }
     ]
 }

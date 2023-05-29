@@ -1,7 +1,7 @@
 /**
  * 测试假数据集
  */
-import CONSTANT_DATA from './contantData';
+import CONSTANT_DATA from './constantData';
 const pageList = CONSTANT_DATA.PAGE_LISTS;
 
 export default {

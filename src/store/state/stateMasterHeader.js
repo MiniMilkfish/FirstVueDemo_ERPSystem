@@ -1,4 +1,4 @@
-import CONSTANT_DATA from '../../utils/contantData';
+import CONSTANT_DATA from '../../utils/constantData';
 
 export default {
     currentHeaderTabTag: "首页",

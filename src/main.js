@@ -37,7 +37,9 @@ import {
   CollapsePanel,
   InputGroup,
   Image,
-  Popconfirm
+  Popconfirm,
+  Tooltip,
+  Divider
 } from 'ant-design-vue';
 import App from './App.vue';
 import router from './route/index';
@@ -71,6 +73,12 @@ import vAccessoriesList from "./components/vAccessoriesList.vue";
 import vInventoryCount from "./components/vInventoryCount.vue";
 import vCustomerClassification from "./components/vCustomerClassification.vue";
 import vCustomerList from "./components/vCustomerList.vue";
+
+/**
+ * Avoid async-validator global warning
+ */
+import Schema from 'async-validator';
+Schema.warning = function(){};
 
 const app = createApp(App);
 
@@ -120,7 +128,9 @@ app.use(Layout)
   .use(CollapsePanel)
   .use(InputGroup)
   .use(Image)
-  .use(Popconfirm);
+  .use(Popconfirm)
+  .use(Tooltip)
+  .use(Divider);
 
 /**
  * 注册自定义组件

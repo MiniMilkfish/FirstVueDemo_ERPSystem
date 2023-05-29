@@ -1,5 +1,5 @@
 import ACTION_TYPES from '../constantActionTypes';
-import CONSTANT_DATA from '../../utils/contantData';
+import CONSTANT_DATA from '../../utils/constantData';
 
 /**
  * 处理同步请求

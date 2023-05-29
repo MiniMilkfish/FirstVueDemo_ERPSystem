@@ -7,108 +7,108 @@ export default {
     TABLE_COLUMNS: [
         {
             title: '序号',
-            width: 200,
-            key: 'a',
-            dataIndex: 'a',
+            width: 100,
+            key: 'id',
+            dataIndex: 'id',
             align: 'center',
             fixed: 'left'
         }, {
             title: '工地编号',
-            width: 200,
-            key: 'b',
-            dataIndex: 'b',
+            width: 300,
+            key: 'contractcode',
+            dataIndex: 'contractcode',
         }, {
             title: '合同签订方',
             width: 200,
-            key: 'c',
-            dataIndex: 'c'
+            key: 'contractparty',
+            dataIndex: 'contractparty'
         }, {
             title: '工地项目名称',
             width: 200,
-            key: 'd',
-            dataIndex: 'd'
+            key: 'projectname',
+            dataIndex: 'projectname'
         }, {
             title: '地址',
             width: 200,
-            key: 'e',
-            dataIndex: 'e'
+            key: 'projectaddress',
+            dataIndex: 'projectaddress'
         }, {
             title: '联系人',
             width: 200,
-            key: 'f',
-            dataIndex: 'f'
+            key: 'projectlinkman',
+            dataIndex: 'projectlinkman'
         }, {
             title: '签订日期',
             width: 200,
-            key: 'g',
-            dataIndex: 'g'
+            key: 'contractdate',
+            dataIndex: 'contractdate'
         }, {
             title: '状态',
             width: 200,
-            key: 'h',
-            dataIndex: 'h'
+            key: 'contractstatus',
+            dataIndex: 'contractstatus'
         }, {
             title: '数量',
             width: 200,
-            key: 'i',
-            dataIndex: 'i'
+            key: 'devicecount',
+            dataIndex: 'devicecount'
         }, {
             title: '收款',
             children: [{
                 title: '应收',
                 width: 200,
-                key: 'j',
-                dataIndex: 'j'
+                key: 'contractamount',
+                dataIndex: 'contractamount'
             }, {
                 title: '未收',
                 width: 200,
-                key: 'k',
-                dataIndex: 'k'
+                key: 'outpayment',
+                dataIndex: 'outpayment'
             }, {
                 title: '日期',
                 width: 200,
-                key: 'l',
-                dataIndex: 'l'
+                key: 'paymentdate',
+                dataIndex: 'paymentdate'
             }]
         }, {
             title: '质保/运维期',
-            width: 200,
-            key: 'm',
-            dataIndex: 'm'
+            width: 240,
+            key: 'operadate',
+            dataIndex: 'operadate'
         }, {
             title: '续运维期',
-            width: 200,
-            key: 'n',
-            dataIndex: 'n'
+            width: 240,
+            key: 'continueoperadate',
+            dataIndex: 'continueoperadate'
         }, {
-            title: '收款',
+            title: '代理商',
             children: [{
                 title: '结算日期',
                 width: 200,
-                key: 'o',
-                dataIndex: 'o'
+                key: 'settlementdate',
+                dataIndex: 'settlementdate'
             }, {
                 title: '结算金额',
                 width: 200,
-                key: 'p',
-                dataIndex: 'p'
+                key: 'settlementamount',
+                dataIndex: 'settlementamount'
             }]
         },
         {
             title: '开票状态',
             width: 200,
-            key: 'q',
-            dataIndex: 'q'
+            key: 'billingstatus',
+            dataIndex: 'billingstatus'
         }, {
             title: '回访状态',
             width: 200,
-            key: 'r',
-            dataIndex: 'r'
+            key: 'returnstatus',
+            dataIndex: 'returnstatus'
         }, {
             title: '备注',
             width: 200,
-            key: 's',
-            dataIndex: 's'
+            key: 'remark',
+            dataIndex: 'remark'
         }
     ]
 }

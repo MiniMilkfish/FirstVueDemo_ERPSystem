@@ -2,7 +2,7 @@
 <template>
   <div class="page_result">
     <div class="result_extra_control">
-      <a-button type="primary" size="small" @click="showAddModal"
+      <a-button type="primary" size="small" @click="modifyModalShow"
         >添加</a-button
       >
     </div>
@@ -17,148 +17,83 @@
           dataIndex: 'operation',
         },
       ]"
-      :data-source="data"
+      :data-source="getSupplyChannelTableDatas.data"
       :scroll="{ x: 600, y: tableHeight }"
-      :pagination="{ showQuickJumper: true }"
+      :pagination="{
+        showQuickJumper: true,
+        defaultPageSize: defaultPageSize,
+        pageSizeOptions: pageSizeOptions,
+        total: getSupplyChannelTableDatas.total,
+        current: getSupplyChannelTableDatas.activePage,
+        onChange: handleQuerySupplyChannelList,
+      }"
     >
-      <template #bodyCell="{ column }">
+      <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'operation'">
           <a-space>
-            <a-button type="primary" size="small" @click="showEditModal"
+            <a-button
+              type="primary"
+              size="small"
+              @click="modifyModalShow(record.supplierid, record.suppliername)"
               >编辑</a-button
             >
-            <a-button danger size="small">删除</a-button>
+            <a-popconfirm
+              title="确定移除当前供应渠道嘛?"
+              @confirm="inventoryAlarmSettingsTableRowDelete(record.supplierid)"
+            >
+              <a-button danger size="small">删除</a-button>
+            </a-popconfirm>
           </a-space>
         </template>
       </template>
     </a-table>
   </div>
 
-  <!-- 新增 运维时间 -->
+  <!-- 新增 & 编辑 供应渠道 -->
   <a-modal
-    v-model:visible="addModalVisible"
-    title="运维时间 新增"
+    v-model:visible="modifyModalVisible"
+    :title="'供应渠道 ' + modalType"
     width="600px"
-    @ok="addModalSubmit"
+    @ok="modifyModalSubmit"
   >
     <template #footer>
-      <a-button key="back" @click="addModalClose">关闭</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="addModalSubmit"
+      <a-button key="back" @click="modifyModalClose">关闭</a-button>
+      <a-button key="submit" type="primary" @click="modifyModalSubmit"
         >提交</a-button
       >
     </template>
     <a-form
       ref="formRef"
-      :model="formState"
       layout="horizontal"
       name="form_in_modal"
+      :rules="rules"
+      :model="getSupplyChannelDetail"
       :label-col="labelCol"
       :wrapper-col="wrapperCol"
     >
-      <a-form-item name="a" label="项目名称">
-        <a-input v-model:value="formState.a" placeholder="请填写项目名称" />
-      </a-form-item>
-      <a-form-item name="b" label="和客户沟通的安装时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="b" label="计划现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="b" label="实际现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="f" label="实际现场勘察情况">
-        <a-upload
-          v-model:file-list="fileList"
-          name="file"
-          list-type="picture-card"
-          class="avatar-uploader"
-          :multiple="true"
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          :headers="headers"
-          @change="handleChange"
-        >
-          <div>
-            <loading-outlined v-if="loading"></loading-outlined>
-            <plus-outlined v-else></plus-outlined>
-          </div>
-        </a-upload>
-      </a-form-item>
-      <a-form-item name="e" label="备注">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="请填写备注说明"
-          auto-size
-          style="width: 100%"
+      <a-form-item name="suppliername" label="供应商名称">
+        <a-input
+          v-model:value="getSupplyChannelDetail.suppliername"
+          placeholder="请填写供应商名称"
         />
       </a-form-item>
-    </a-form>
-  </a-modal>
-
-  <!--  运维时间 编辑 -->
-  <a-modal
-    v-model:visible="editModalVisible"
-    title="运维时间 编辑"
-    width="600px"
-    @ok="addModalSubmit"
-  >
-    <template #footer>
-      <a-button key="back" @click="editModalClose">返回</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="editModalSubmit"
-        >提交</a-button
-      >
-    </template>
-    <a-form
-      ref="formRef"
-      :model="formState"
-      layout="horizontal"
-      name="form_in_modal"
-      :label-col="labelCol"
-      :wrapper-col="wrapperCol"
-    >
-      <a-form-item name="a" label="项目名称">
-        <a-input v-model:value="formState.a" placeholder="请填写项目名称" />
+      <a-form-item name="shortcode" label="供应商简码">
+        <a-input
+          v-model:value="getSupplyChannelDetail.shortcode"
+          placeholder="请填写供应商简码"
+        />
       </a-form-item>
-      <a-form-item name="b" label="和客户沟通的安装时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="b" label="计划现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="b" label="实际现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="f" label="实际现场勘察情况">
-        <a-upload
-          v-model:file-list="fileList"
-          name="file"
-          list-type="picture-card"
-          class="avatar-uploader"
-          :multiple="true"
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          :headers="headers"
-          @change="handleChange"
-        >
-          <div>
-            <loading-outlined v-if="loading"></loading-outlined>
-            <plus-outlined v-else></plus-outlined>
-          </div>
-        </a-upload>
-      </a-form-item>
-      <a-form-item name="e" label="备注">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="请填写备注说明"
-          auto-size
+      <a-form-item name="level" label="等级">
+        <a-input-number
           style="width: 100%"
+          v-model:value="getSupplyChannelDetail.level"
+          placeholder="请填写等级"
+        />
+      </a-form-item>
+      <a-form-item name="remark" label="备注">
+        <a-input
+          v-model:value="getSupplyChannelDetail.remark"
+          placeholder="请填写备注"
         />
       </a-form-item>
     </a-form>
@@ -166,176 +101,36 @@
 </template>
 
 <script>
-  import { defineComponent, reactive, ref, toRaw } from "vue";
+  import { defineComponent, ref } from "vue";
   import CONSTANT_SUPPLY_CHANNEL from "../utils/constantSupplyChannel";
-  import { PlusOutlined, LoadingOutlined } from "@ant-design/icons-vue";
-
-  let data = [];
-  for (let i = 0; i < 120; i++) {
-    let rowObj = { key: i };
-
-    for (let j = 0; j < 26; j++) {
-      rowObj[String.fromCharCode(97 + j)] = "占位";
-    }
-    data.push(rowObj);
-  }
+  import ACTION_TYPES from "../store/constantActionTypes";
+  import CONSTANT_DATA from "../utils/constantData";
 
   export default defineComponent({
     data() {
-      return {
-        contractId: "",
-        data,
-        columns: CONSTANT_SUPPLY_CHANNEL.TABLE_COLUMNS,
-      };
-    },
-    components: {
-      PlusOutlined,
-      LoadingOutlined,
-    },
-    setup() {
       const formRef = ref();
-      const loading = ref(false);
-      const addModalVisible = ref(false);
-      const editModalVisible = ref(false);
-      const stockModalVisible = ref(false);
-      const fileList = ref([]);
-      const editModalFileList = ref([
-        {
-          uid: "1",
-          name: "xxxxxxxxxxxxxxxxxxx.pdf",
-          status: "done",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/xxx.png",
-        },
-        {
-          uid: "2",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.zip",
-          status: "done",
-          url: "http://www.baidu.com/yyy.png",
-        },
-        {
-          uid: "3",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.png",
-          status: "error",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/zzz.png",
-        },
-      ]);
-      const activeKey = ref(["1"]);
-
-      const formState = reactive({
-        a: [],
-        b: "",
-        c: "",
-        d: "jack",
-        e: "",
-        f: "",
-        g: "",
-        h: "",
-        i: "",
-        modifier: "public",
-      });
-
-      const showAddModal = () => {
-        addModalVisible.value = true;
-      };
-
-      const addModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              addModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const addModalClose = () => {
-        addModalVisible.value = false;
-      };
-
-      const showEditModal = () => {
-        editModalVisible.value = true;
-      };
-
-      const editModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              editModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const editModalClose = () => {
-        editModalVisible.value = false;
-      };
-
-      const stockModalShow = () => {
-        console.log("123123123");
-        stockModalVisible.value = true;
-      };
-
-      const stockModalClose = () => {
-        stockModalVisible.value = false;
-      };
-
-      const handleChange = value => {
-        console.log(`selected ${value}`);
-      };
-
-      const focus = () => {
-        console.log("focus");
-      };
+      const modifyModalVisible = ref(false);
 
       return {
-        loading,
-        addModalVisible,
-        editModalVisible,
-        stockModalVisible,
-        formState,
         formRef,
-        labelCol: { style: { width: "180px", textAlign: "right" } },
+        modifyModalVisible,
+        columns: CONSTANT_SUPPLY_CHANNEL.TABLE_COLUMNS,
+        labelCol: { style: { width: "120px", textAlign: "left" } },
         wrapperCol: { span: 24 },
-        fileList,
-        headers: {
-          authorization: "authorization-text",
+        rules: {
+          suppliername: {
+            required: true,
+            message: "供应商名称为必填项",
+          },
+          shortcode: {
+            required: true,
+            message: "简写编码为必填项",
+          },
         },
-        editModalFileList,
-        activeKey,
-        showAddModal,
-        addModalSubmit,
-        addModalClose,
-        showEditModal,
-        editModalSubmit,
-        editModalClose,
-        stockModalShow,
-        stockModalClose,
-        handleChange,
-        focus,
+        modalType: "",
+        defaultPageSize: CONSTANT_SUPPLY_CHANNEL.TABLE_SHOW_SIZE,
+        pageSizeOptions: CONSTANT_SUPPLY_CHANNEL.TABLE_SHOW_SIZE_ARRAY,
+        warnTypeList: CONSTANT_DATA.WARN_TYPE,
       };
     },
     computed: {
@@ -349,6 +144,113 @@
           40
         );
       },
+      getSupplyChannelTableDatas() {
+        return this.$store.state.moduleSupplyChannel.tableData;
+      },
+      getSupplyChannelDetail() {
+        return this.$store.state.moduleSupplyChannel.supplyChannelDetail;
+      },
+      getSupplyChannelProductList() {
+        return this.$store.state.moduleSupplyChannel.productList;
+      },
+      getSupplyChannelAccessoriesList() {
+        return this.$store.state.moduleSupplyChannel.accessoriesList;
+      },
+      getSupplyChannelWarehouseList() {
+        return this.$store.state.moduleSupplyChannel.warehouseList;
+      },
+    },
+    methods: {
+      modifyModalSubmit() {
+        let _this = this;
+        this.$refs.formRef
+          .validate()
+          .then(res => {
+            _this.$data.modifyModalVisible = false;
+
+            _this.$store.dispatch(ACTION_TYPES.SUPPLY_CHANNEL_MODIFY, {
+              ...res,
+              actionFailure: _this.actionFailure,
+              actionSuccess: _this.actionSuccess,
+              actionCallback: _this.handleQuerySupplyChannelList,
+            });
+          })
+          .catch(({ errorFields }) => {
+            if (errorFields && errorFields.length > 0) {
+              let description = errorFields[0].errors[0];
+              _this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+                type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+                message: "验证错误",
+                description: description,
+              });
+            }
+          });
+      },
+      handleQuerySupplyChannelList(currentPage, showPageSize) {
+        currentPage = currentPage
+          ? currentPage
+          : this.$store.state.moduleSupplyChannel.tableData.activePage;
+        showPageSize = showPageSize
+          ? showPageSize
+          : CONSTANT_SUPPLY_CHANNEL.TABLE_SHOW_SIZE;
+
+        this.$store.dispatch(ACTION_TYPES.SUPPLY_CHANNEL_LIST_QUERY, {
+          actionFailure: this.actionFailure,
+          currentPage,
+          showPageSize,
+        });
+      },
+      actionFailure(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+          message: "供应渠道" + this.modalType,
+          description: description,
+        });
+      },
+      actionSuccess(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.SUCCESS,
+          message: "供应渠道" + this.modalType,
+          description: description,
+        });
+      },
+      modifyModalShow(id, name) {
+        let _this = this;
+        this.modifyModalVisible = true;
+
+        if (name && name.length > 0) {
+          this.modalType = "编辑";
+
+          // 查询供应渠道详情
+          this.handleQuerySupplyChannelDetail(id);
+        } else {
+          this.$store.commit(ACTION_TYPES.SUPPLY_CHANNEL_DETAIL_CLEAR);
+          this.modalType = "新增";
+          setTimeout(() => {
+            _this.$refs.formRef.resetFields();
+          });
+        }
+      },
+      modifyModalClose() {
+        this.modifyModalVisible = false;
+      },
+      inventoryAlarmSettingsTableRowDelete(id) {
+        let _this = this;
+        this.$store.dispatch(ACTION_TYPES.SUPPLY_CHANNEL_DELETE, {
+          id,
+          actionFailure: _this.actionFailure,
+          actionSuccess: _this.actionSuccess,
+          actionCallback: _this.handleQuerySupplyChannelList,
+        });
+      },
+      handleQuerySupplyChannelDetail(id) {
+        this.$store.dispatch(ACTION_TYPES.SUPPLY_CHANNEL_DETAIL, id);
+      },
+    },
+    mounted() {
+      // 供应渠道列表查询初始化
+      this.handleQuerySupplyChannelList();
     },
   });
 </script>
@@ -356,26 +258,5 @@
 <style scoped>
   .demo-page-header :deep(tr:last-child td) {
     padding-bottom: 0;
-  }
-</style>
-<style>
-  .avatar-uploader > .ant-upload {
-    width: 128px;
-    height: 128px;
-  }
-  .ant-upload-select-picture-card i {
-    font-size: 32px;
-    color: #999;
-  }
-
-  .ant-upload-select-picture-card .ant-upload-text {
-    margin-top: 8px;
-    color: #666;
-  }
-
-  .edit_modal_filelist {
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    padding: 0 6px 10px;
   }
 </style>

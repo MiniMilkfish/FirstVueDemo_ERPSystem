@@ -21,6 +21,7 @@ export default {
         common.fetchPost(reqUrl, reqParam, function (json) {
             commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
             if (json) {
+                json.currentPage = payload.currentPage;
                 commit(ACTION_TYPES.UNIT_OF_MEASUREMENT_LIST_QUERY, json);
             }
         }, _extraTools)

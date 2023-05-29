@@ -7,31 +7,34 @@ export default {
     TABLE_COLUMNS: [
         {
             title: '序号',
-            width: 200,
-            key: 'a',
-            dataIndex: 'a',
+            width: 80,
+            key: 'id',
+            dataIndex: 'id',
             align: 'center',
             fixed: 'left'
         }, {
             title: '项目名称',
             width: 200,
-            key: 'b',
-            dataIndex: 'b',
+            key: 'projectname',
+            dataIndex: 'projectname',
         }, {
             title: '和客户沟通的安装时间',
-            width: 200,
-            key: 'c',
-            dataIndex: 'c'
+            width: 300,
+            key: 'installdate',
+            align: 'center',
+            dataIndex: 'installdate'
         }, {
             title: '计划现场勘察时间',
-            width: 200,
-            key: 'd',
-            dataIndex: 'd'
+            width: 300,
+            key: 'plansurverydate',
+            align: 'center',
+            dataIndex: 'plansurverydate'
         }, {
             title: '实际现场勘察时间',
-            width: 200,
-            key: 'e',
-            dataIndex: 'e'
+            width: 300,
+            key: 'onsitesurverydate',
+            align: 'center',
+            dataIndex: 'onsitesurverydate'
         }, {
             title: '实际现场勘察情况',
             width: 200,
@@ -40,8 +43,8 @@ export default {
         }, {
             title: '备注',
             width: 200,
-            key: 'f',
-            dataIndex: 'f'
+            key: 'remark',
+            dataIndex: 'remark'
         }
     ]
 }

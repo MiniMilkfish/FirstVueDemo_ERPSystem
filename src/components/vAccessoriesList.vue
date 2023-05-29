@@ -2,11 +2,9 @@
 <template>
   <div class="page_result">
     <div class="result_extra_control">
-      <a-space>
-        <a-button type="primary" size="small" @click="showStockInModal"
-          >添加</a-button
-        >
-      </a-space>
+      <a-button type="primary" size="small" @click="modifyModalShow"
+        >添加</a-button
+      >
     </div>
     <a-table
       :columns="[
@@ -17,547 +15,358 @@
           key: 'operation',
           align: 'center',
           dataIndex: 'operation',
-          fixed: 'right',
         },
       ]"
-      :data-source="data"
-      :scroll="{ x: 2000, y: tableHeight }"
-      :pagination="{ showQuickJumper: true }"
+      :data-source="getAccessoriesListTableDatas.data"
+      :scroll="{ x: 600, y: tableHeight }"
+      :pagination="{
+        showQuickJumper: true,
+        defaultPageSize: defaultPageSize,
+        pageSizeOptions: pageSizeOptions,
+        total: getAccessoriesListTableDatas.total,
+        current: getAccessoriesListTableDatas.activePage,
+        onChange: handleQueryAccessoriesListList,
+      }"
     >
-      <template #bodyCell="{ column }">
+      <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'operation'">
           <a-space>
-            <a-button type="primary" size="small" @click="showEditModal"
+            <a-button
+              type="primary"
+              size="small"
+              @click="modifyModalShow(record.id, record.sparepartname)"
               >编辑</a-button
             >
-            <a-button danger size="small">删除</a-button>
+            <a-popconfirm
+              title="确定移除当前配件嘛?"
+              @confirm="inventoryAlarmSettingsTableRowDelete(record.id)"
+            >
+              <a-button danger size="small">删除</a-button>
+            </a-popconfirm>
           </a-space>
         </template>
       </template>
     </a-table>
   </div>
 
-  <!-- 配件列表新增 -->
+  <!-- 新增 & 编辑 配件 -->
   <a-modal
-    v-model:visible="stockInModalVisible"
-    title="配件列表 - 新增"
-    width="800px"
-    @ok="stockInModalSubmit"
+    v-model:visible="modifyModalVisible"
+    :title="'配件列表 ' + modalType"
+    width="600px"
+    @ok="modifyModalSubmit"
   >
     <template #footer>
-      <a-button key="back" @click="stockInModalClose">关闭</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="stockInModalSubmit"
+      <a-button key="back" @click="modifyModalClose">关闭</a-button>
+      <a-button key="submit" type="primary" @click="modifyModalSubmit"
         >提交</a-button
       >
     </template>
     <a-form
       ref="formRef"
-      :model="formState"
       layout="horizontal"
       name="form_in_modal"
+      :rules="rules"
+      :model="getAccessoriesListDetail"
       :label-col="labelCol"
       :wrapper-col="wrapperCol"
     >
-      <a-form-item name="c" label="所属分类">
-        <a-select
-          ref="select"
-          v-model:value="formState.a"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="a">全部仓库</a-select-option>
-          <a-select-option value="b">主仓库</a-select-option>
-          <a-select-option value="c">杭州仓库</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="a" label="产品名称">
-        <a-input v-model:value="formState.a" placeholder="请填写产品名称" />
-      </a-form-item>
-      <a-form-item name="a" label="规格/型号">
-        <a-input-group compact>
-          <a-input
-            v-model:value="formState.a"
-            style="width: 20%"
-            placeholder="请填写规格/型号"
-          />
-          <a-select
-            ref="select"
-            v-model:value="formState.g"
-            @focus="focus"
-            @change="handleChange"
-          >
-            <a-select-option value="1">单位</a-select-option>
-          </a-select>
-        </a-input-group>
-      </a-form-item>
-      <a-form-item name="c" label="配件清单">
-        <a-table
-          :columns="[
-            {
-              title: '编号',
-              width: 80,
-              key: 'a',
-              dataIndex: 'a',
-              align: 'center',
-            },
-            {
-              title: '配件名称',
-              width: 100,
-              key: 'b',
-              dataIndex: 'b',
-            },
-            {
-              title: '数量',
-              width: 100,
-              key: 'b',
-              dataIndex: 'b',
-            },
-            {
-              title: '单位',
-              width: 100,
-              key: 'b',
-              dataIndex: 'b',
-            },
-            {
-              title: '小计',
-              width: 100,
-              key: 'b',
-              dataIndex: 'b',
-            },
-            {
-              title: '操作',
-              width: 120,
-              key: 'operation',
-              align: 'center',
-              dataIndex: 'operation',
-              fixed: 'right',
-            },
-          ]"
-          :data-source="data"
-          :scroll="{ x: 600, y: 300 }"
-          :pagination="{ showQuickJumper: true }"
-        >
-          <template #bodyCell="{ column }">
-            <template v-if="column.key === 'operation'">
-              <a-space>
-                <a-button type="primary" size="small" @click="showEditModal"
-                  >编辑</a-button
-                >
-                <a-button danger size="small">删除</a-button>
-              </a-space>
-            </template>
-          </template>
-        </a-table>
-      </a-form-item>
-    </a-form>
-  </a-modal>
-
-  <!-- 出库 -->
-  <a-modal
-    v-model:visible="stockOutModalVisible"
-    title="出库"
-    width="1000px"
-    @ok="stockOutModalSubmit"
-  >
-    <template #footer>
-      <a-button key="back" @click="stockOutModalClose">关闭</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="stockOutModalSubmit"
-        >提交</a-button
-      >
-    </template>
-    <a-form
-      ref="formRef"
-      :model="formState"
-      layout="horizontal"
-      name="form_in_modal"
-      :label-col="labelCol"
-      :wrapper-col="wrapperCol"
-    >
-      <a-form-item name="a" label="类别">
-        <a-radio-group v-model:value="formState.a">
-          <a-radio :value="1">配件</a-radio>
-          <a-radio :value="2">产品</a-radio>
-          <a-radio :value="3">定制加工件</a-radio>
-          <a-radio :value="4">半成品</a-radio>
-        </a-radio-group>
-      </a-form-item>
-      <a-form-item name="c" label="仓库">
-        <a-select
-          ref="select"
-          v-model:value="formState.a"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="a">全部仓库</a-select-option>
-          <a-select-option value="b">主仓库</a-select-option>
-          <a-select-option value="c">杭州仓库</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="c" label="所属分类">
-        <a-select
-          ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
-          <a-select-option value="3">3</a-select-option>
-          <a-select-option value="4">4</a-select-option>
-          <a-select-option value="5">5</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="c" label="型号">
-        <a-select
-          ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
-        >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
-          <a-select-option value="3">3</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item name="a" label="产品/配件名称">
+      <a-form-item name="sparepartname" label="配件名称">
         <a-input
-          v-model:value="formState.a"
-          placeholder="请填写产品/配件名称"
+          v-model:value="getAccessoriesListDetail.sparepartname"
+          placeholder="请填写配件名称"
         />
       </a-form-item>
-      <a-form-item name="c" label="供应商">
+      <a-form-item name="sparepartmodel" label="配件型号">
+        <a-input
+          v-model:value="getAccessoriesListDetail.sparepartmodel"
+          placeholder="请填写配件型号"
+        />
+      </a-form-item>
+      <a-form-item name="spareparttypeid" label="配件类型">
         <a-select
           ref="select"
-          v-model:value="formState.g"
-          @focus="focus"
-          @change="handleChange"
+          v-model:value="getAccessoriesListDetail.spareparttypeid"
         >
-          <a-select-option value="1">1</a-select-option>
-          <a-select-option value="2">2</a-select-option>
+          <a-select-option
+            v-for="item in getProductClassificationList"
+            :key="item.id"
+            :value="item.id"
+            >{{ item.typename }}</a-select-option
+          >
         </a-select>
       </a-form-item>
-      <a-form-item name="e" label="标签">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="逐行输入，一行一台设备"
-          auto-size
-          style="width: 100%"
+      <a-form-item name="supplierid" label="供应商">
+        <a-select
+          ref="select"
+          v-model:value="getAccessoriesListDetail.supplierid"
+          placeholder="请选择供应商"
+        >
+          <a-select-option
+            v-for="item in getSupplyChannelList"
+            :key="item.supplierid"
+            :value="item.supplierid"
+            >{{ item.suppliername }}</a-select-option
+          >
+        </a-select>
+      </a-form-item>
+      <a-form-item name="unitid" label="单位">
+        <a-select ref="select" v-model:value="getAccessoriesListDetail.unitid">
+          <a-select-option
+            v-for="item in getUnitOfMeasurementList"
+            :key="item.id"
+            :value="item.id"
+            >{{ item.unitname }}</a-select-option
+          >
+        </a-select>
+      </a-form-item>
+      <a-form-item name="specialflag" label="配件标识">
+        <a-select
+          ref="select"
+          v-model:value="getAccessoriesListDetail.specialflag"
+          placeholder="请选择配件标识"
+        >
+          <a-select-option
+            v-for="item in sparepartFlag"
+            :key="item.key"
+            :value="item.key"
+            >{{ item.label }}</a-select-option
+          >
+        </a-select>
+      </a-form-item>
+      <a-form-item name="sparepartpriceamount" label="配件单价">
+        <a-input
+          v-model:value="getAccessoriesListDetail.sparepartpriceamount"
+          placeholder="请填写配件单价"
         />
       </a-form-item>
-      <a-form-item name="b" label="质保范围">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="a" label="数量">
-        <a-input-group compact>
-          <a-input
-            v-model:value="formState.a"
-            style="width: 20%"
-            placeholder="工地编号"
-          />
-          <a-select
-            ref="select"
-            v-model:value="formState.g"
-            @focus="focus"
-            @change="handleChange"
-          >
-            <a-select-option value="1">单位</a-select-option>
-          </a-select>
-        </a-input-group>
-      </a-form-item>
-      <a-form-item name="a" label="批次">
-        <a-input v-model:value="formState.a" placeholder="请填写批次" />
-      </a-form-item>
-      <a-form-item name="e" label="入库时间">
-        <a-date-picker v-model:value="formState.e" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="e" label="备注">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="备注"
-          auto-size
-          style="width: 100%"
+      <a-form-item name="remark" label="备注">
+        <a-input
+          v-model:value="getAccessoriesListDetail.remark"
+          placeholder="请填写备注"
         />
       </a-form-item>
     </a-form>
-  </a-modal>
-
-  <!-- 产品分类列表 -->
-  <a-modal
-    v-model:visible="editModalVisible"
-    title="产品分类列表"
-    width="1000px"
-    @ok="stockInModalSubmit"
-  >
-    <template #footer>
-      <a-button key="back" @click="editModalClose">关闭</a-button>
-    </template>
-    <div class="result_extra_control">
-      <a-button type="primary" size="small" @click="showStockInModal"
-        >添加</a-button
-      >
-    </div>
-    <a-table
-      :columns="[
-        {
-          title: '序号',
-          width: 200,
-          key: 'a',
-          dataIndex: 'a',
-          align: 'center',
-        },
-        {
-          title: '产品名称',
-          width: 200,
-          key: 'b',
-          dataIndex: 'b',
-        },
-        {
-          title: '操作',
-          width: 150,
-          key: 'operation',
-          align: 'center',
-          dataIndex: 'operation',
-          fixed: 'right',
-        },
-      ]"
-      :data-source="data"
-      :scroll="{ x: 600, y: 300 }"
-      :pagination="{ showQuickJumper: true }"
-    >
-      <template #bodyCell="{ column }">
-        <template v-if="column.key === 'operation'">
-          <a-space>
-            <a-button type="primary" size="small" @click="showEditModal"
-              >编辑</a-button
-            >
-            <a-button danger size="small">删除</a-button>
-          </a-space>
-        </template>
-      </template>
-    </a-table>
   </a-modal>
 </template>
 
 <script>
-  import { defineComponent, reactive, ref, toRaw } from "vue";
-  import CONSTANT_PRODUCT_MANAGEMENT from "../utils/constantProductManagement";
-
-  let data = [];
-  for (let i = 0; i < 120; i++) {
-    let rowObj = { key: i };
-
-    for (let j = 0; j < 26; j++) {
-      rowObj[String.fromCharCode(97 + j)] = "占位";
-    }
-    data.push(rowObj);
-  }
+  import { defineComponent, ref } from "vue";
+  import CONSTANT_ACCESSORIES from "../utils/constantAccessoriesList";
+  import ACTION_TYPES from "../store/constantActionTypes";
+  import CONSTANT_DATA from "../utils/constantData";
 
   export default defineComponent({
     data() {
-      return {
-        contractId: "",
-        data,
-        columns: CONSTANT_PRODUCT_MANAGEMENT.TABLE_COLUMNS,
-      };
-    },
-    setup() {
       const formRef = ref();
-      const loading = ref(false);
-      const stockInModalVisible = ref(false);
-      const stockOutModalVisible = ref(false);
-      const editModalVisible = ref(false);
-      const stockModalVisible = ref(false);
-      const fileList = ref([]);
-      const editModalFileList = ref([
-        {
-          uid: "1",
-          name: "xxxxxxxxxxxxxxxxxxx.pdf",
-          status: "done",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/xxx.png",
-        },
-        {
-          uid: "2",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.zip",
-          status: "done",
-          url: "http://www.baidu.com/yyy.png",
-        },
-        {
-          uid: "3",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.png",
-          status: "error",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/zzz.png",
-        },
-      ]);
-      const activeKey = ref(["1"]);
-
-      const formState = reactive({
-        a: "a",
-        b: "",
-        c: "a",
-        d: "",
-        e: "",
-        f: "",
-        g: "",
-        h: "",
-        i: "",
-        modifier: "public",
-      });
-
-      const showStockInModal = () => {
-        stockInModalVisible.value = true;
-      };
-
-      const showStockOutModal = () => {
-        stockOutModalVisible.value = true;
-      };
-
-      const stockInModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              stockInModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const stockOutModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              stockOutModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const stockInModalClose = () => {
-        stockInModalVisible.value = false;
-      };
-
-      const stockOutModalClose = () => {
-        stockOutModalVisible.value = false;
-      };
-
-      const showEditModal = () => {
-        editModalVisible.value = true;
-      };
-
-      const editModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              editModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const editModalClose = () => {
-        editModalVisible.value = false;
-      };
-
-      const stockModalShow = () => {
-        console.log("123123123");
-        stockModalVisible.value = true;
-      };
-
-      const stockModalClose = () => {
-        stockModalVisible.value = false;
-      };
-
-      const handleChange = value => {
-        console.log(`selected ${value}`);
-      };
-
-      const focus = () => {
-        console.log("focus");
-      };
+      const modifyModalVisible = ref(false);
 
       return {
-        loading,
-        stockInModalVisible,
-        stockOutModalVisible,
-        editModalVisible,
-        stockModalVisible,
-        formState,
         formRef,
-        labelCol: { style: { width: "120px" } },
+        modifyModalVisible,
+        columns: CONSTANT_ACCESSORIES.TABLE_COLUMNS,
+        labelCol: { style: { width: "120px", textAlign: "left" } },
         wrapperCol: { span: 24 },
-        fileList,
-        headers: {
-          authorization: "authorization-text",
+        rules: {
+          sparepartname: {
+            required: true,
+            message: "配件名称为必填项",
+          },
+          sparepartmodel: {
+            required: true,
+            message: "配件型号为必填项",
+          },
+          spareparttypeid: {
+            required: true,
+            message: "配件类型为必选项",
+          },
+          supplierid: {
+            required: true,
+            message: "供应商为必选项",
+          },
+          unitid: {
+            required: true,
+            message: "单位为必选项",
+          },
+          specialflag: {
+            required: true,
+            message: "配件标识为必选项",
+          },
+          sparepartpriceamount: {
+            required: true,
+            message: "配件单价为必填项",
+          },
         },
-        editModalFileList,
-        activeKey,
-        showStockInModal,
-        stockInModalSubmit,
-        stockInModalClose,
-        showStockOutModal,
-        stockOutModalSubmit,
-        stockOutModalClose,
-        showEditModal,
-        editModalSubmit,
-        editModalClose,
-        stockModalShow,
-        stockModalClose,
-        handleChange,
-        focus,
+        modalType: "",
+        defaultPageSize: CONSTANT_ACCESSORIES.TABLE_SHOW_SIZE,
+        pageSizeOptions: CONSTANT_ACCESSORIES.TABLE_SHOW_SIZE_ARRAY,
+        warnTypeList: CONSTANT_DATA.WARN_TYPE,
+        sparepart: CONSTANT_DATA.SPAREPART_FLAG,
+        sparepartFlag: CONSTANT_DATA.SPAREPART_FLAG,
       };
     },
     computed: {
       tableHeight() {
         return (
           this.$store.state.moduleLogin.LoginFormDimensions.pageContentHeight -
-          104 -
+          14 -
           12 -
           55 -
           64 -
           40
         );
       },
+      getAccessoriesListTableDatas() {
+        return this.$store.state.moduleAccessoriesList.tableData;
+      },
+      getAccessoriesListDetail() {
+        return this.$store.state.moduleAccessoriesList.accessoriesListDetail;
+      },
+      getProductClassificationList() {
+        return this.$store.state.moduleAccessoriesList
+          .productClassificationList;
+      },
+      getUnitOfMeasurementList() {
+        return this.$store.state.moduleAccessoriesList.unitOfMeasurementList;
+      },
+      getAccessoryList() {
+        return this.$store.state.moduleAccessoriesList.accessoryList;
+      },
+      getSupplyChannelList() {
+        return this.$store.state.moduleAccessoriesList.supplyChannelList;
+      },
+    },
+    methods: {
+      modifyModalSubmit() {
+        let _this = this;
+        this.$refs.formRef
+          .validate()
+          .then(res => {
+            _this.$data.modifyModalVisible = false;
+
+            _this.$store.dispatch(ACTION_TYPES.ACCESSORY_MODIFY, {
+              ...res,
+              actionFailure: _this.actionFailure,
+              actionSuccess: _this.actionSuccess,
+              actionCallback: _this.handleQueryAccessoriesListList,
+            });
+          })
+          .catch(({ errorFields }) => {
+            if (errorFields && errorFields.length > 0) {
+              let description = errorFields[0].errors[0];
+              _this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+                type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+                message: "验证错误",
+                description: description,
+              });
+            }
+          });
+      },
+      handleQueryAccessoriesListList(currentPage, showPageSize) {
+        currentPage = currentPage
+          ? currentPage
+          : this.$store.state.moduleAccessoriesList.tableData.activePage;
+        showPageSize = showPageSize
+          ? showPageSize
+          : CONSTANT_ACCESSORIES.TABLE_SHOW_SIZE;
+
+        this.$store.dispatch(ACTION_TYPES.ACCESSORY_LIST_QUERY, {
+          actionFailure: this.actionFailure,
+          currentPage,
+          showPageSize,
+        });
+      },
+      actionFailure(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+          message: "配件" + this.modalType,
+          description: description,
+        });
+      },
+      actionSuccess(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.SUCCESS,
+          message: "配件" + this.modalType,
+          description: description,
+        });
+      },
+      modifyModalShow(id, name) {
+        let _this = this;
+        this.modifyModalVisible = true;
+
+        if (name && name.length > 0) {
+          this.modalType = "编辑";
+
+          // 查询配件详情
+          this.handleQueryAccessoriesListDetail(id);
+        } else {
+          this.$store.commit(ACTION_TYPES.ACCESSORY_DETAIL_CLEAR);
+          this.modalType = "新增";
+          setTimeout(() => {
+            _this.$refs.formRef.resetFields();
+          });
+        }
+      },
+      modifyModalClose() {
+        this.modifyModalVisible = false;
+      },
+      inventoryAlarmSettingsTableRowDelete(id) {
+        let _this = this;
+        this.$store.dispatch(ACTION_TYPES.ACCESSORY_DELETE, {
+          id,
+          actionFailure: _this.actionFailure,
+          actionSuccess: _this.actionSuccess,
+          actionCallback: _this.handleQueryAccessoriesListList,
+        });
+      },
+      handleQueryAccessoriesListDetail(id) {
+        this.$store.dispatch(ACTION_TYPES.ACCESSORY_DETAIL, id);
+      },
+      handleQueryProductClassificationList() {
+        this.$store.dispatch(
+          ACTION_TYPES.ACCESSORY_PAGE_ACCESSORY_CLASSIFICATION_LIST
+        );
+      },
+      handleQueryUnitOfMeasurementList() {
+        this.$store.dispatch(
+          ACTION_TYPES.ACCESSORY_PAGE_UNIT_OF_MEASUREMENT_LIST
+        );
+      },
+      handleQuerySupplyChannelList() {
+        this.$store.dispatch(ACTION_TYPES.ACCESSORY_PAGE_SUPPLY_CHANNEL_LIST);
+      },
+      handleAccessoryListOnSelect(accessoryId, bomsListId) {
+        this.$store.commit(ACTION_TYPES.ACCESSORY_PAGE_ACCESSORY_UNIT_MATCHED, {
+          accessoryId,
+          bomsListId,
+        });
+      },
+      handleAddDevice(deviceTypeId, unit) {
+        this.$store.commit(ACTION_TYPES.ACCESSORY_DETAIL_DEVICE_BOMLIST_ADD, {
+          deviceTypeId,
+          unit,
+        });
+      },
+      handleRemoveDevice(bomItem) {
+        this.$store.commit(
+          ACTION_TYPES.ACCESSORY_DETAIL_DEVICE_BOMLIST_REMOVE,
+          bomItem.id
+        );
+      },
+    },
+    mounted() {
+      // 配件列表查询初始化
+      this.handleQueryAccessoriesListList();
+
+      // 配件分类列表初始化
+      this.handleQueryProductClassificationList();
+
+      // 计量单位列表初始化
+      this.handleQueryUnitOfMeasurementList();
+
+      // 供应商列表初始化
+      this.handleQuerySupplyChannelList();
     },
   });
 </script>
@@ -565,26 +374,5 @@
 <style scoped>
   .demo-page-header :deep(tr:last-child td) {
     padding-bottom: 0;
-  }
-</style>
-<style>
-  .avatar-uploader > .ant-upload {
-    width: 128px;
-    height: 128px;
-  }
-  .ant-upload-select-picture-card i {
-    font-size: 32px;
-    color: #999;
-  }
-
-  .ant-upload-select-picture-card .ant-upload-text {
-    margin-top: 8px;
-    color: #666;
-  }
-
-  .edit_modal_filelist {
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    padding: 0 6px 10px;
   }
 </style>

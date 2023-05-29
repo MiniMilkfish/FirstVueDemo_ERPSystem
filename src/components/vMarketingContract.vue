@@ -3,13 +3,24 @@
   <div class="page_result">
     <div class="result_extra_control">
       <a-space>
-        <a-button type="primary" size="small" @click="() => {}">添加</a-button>
-        <a-button type="primary" size="small" @click="() => {}"
+        <a-button type="primary" size="small" @click="modifyModalShow"
+          >添加</a-button
+        >
+        <a-button
+          type="primary"
+          size="small"
+          @click="marketingContractInvoiceApply"
+          :disabled="selectedRowKeys.length === 0"
           >开票申请</a-button
         >
       </a-space>
     </div>
     <a-table
+      :rowSelection="{
+        selectedRowKeys: selectedRowKeys,
+        onChange: marketingContractTableRowOnChange,
+      }"
+      :rowKey="record => record.id"
       :columns="[
         ...columns,
         {
@@ -21,210 +32,327 @@
           fixed: 'right',
         },
       ]"
-      :data-source="data"
+      :data-source="getMarketingContractListTableDatas.data"
       :scroll="{ x: 2000, y: tableHeight }"
-      :pagination="{ showQuickJumper: true }"
+      :pagination="{
+        showQuickJumper: true,
+        defaultPageSize: defaultPageSize,
+        pageSizeOptions: pageSizeOptions,
+        total: getMarketingContractListTableDatas.total,
+        current: getMarketingContractListTableDatas.activePage,
+        onChange: handleQueryMarketingContractList,
+      }"
     >
-      <template #bodyCell="{ column }">
+      <template #bodyCell="{ text, column, record }">
+        <template v-if="column.key === 'remark'">
+          <template v-if="text.length > 20">
+            <a-tooltip color="blue">
+              <template #title>{{ text }}</template>
+              {{ text.slice(0, 20) + "..." }}
+            </a-tooltip>
+          </template>
+        </template>
         <template v-if="column.key === 'operation'">
           <a-space>
-            <a-button type="primary" size="small" @click="showEditModal"
+            <a-button
+              type="primary"
+              size="small"
+              @click="modifyModalShow(record.id, record.projectname)"
               >查看</a-button
             >
-            <a-button danger size="small">删除</a-button>
+            <a-popconfirm
+              title="确定移除当前销售合同嘛?"
+              @confirm="marketingContractTableRowDelete(record.id)"
+            >
+              <a-button danger size="small">删除</a-button>
+            </a-popconfirm>
           </a-space>
         </template>
       </template>
     </a-table>
   </div>
 
-  <!-- 新增 销售合同 -->
+  <!--  销售合同 新增 && 编辑 -->
   <a-modal
-    v-model:visible="addModalVisible"
-    title="销售合同 新增"
-    width="600px"
-    @ok="addModalSubmit"
-  >
-    <template #footer>
-      <a-button key="back" @click="addModalClose">关闭</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="addModalSubmit"
-        >提交</a-button
-      >
-    </template>
-    <a-form
-      ref="formRef"
-      :model="formState"
-      layout="horizontal"
-      name="form_in_modal"
-      :label-col="labelCol"
-      :wrapper-col="wrapperCol"
-    >
-      <a-form-item name="a" label="项目名称">
-        <a-input v-model:value="formState.a" placeholder="请填写项目名称" />
-      </a-form-item>
-      <a-form-item name="b" label="和客户沟通的安装时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="b" label="计划现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="b" label="实际现场勘察时间">
-        <a-range-picker v-model:value="formState.b" style="width: 100%" />
-      </a-form-item>
-      <a-form-item name="f" label="实际现场勘察情况">
-        <a-upload
-          v-model:file-list="fileList"
-          name="file"
-          list-type="picture-card"
-          class="avatar-uploader"
-          :multiple="true"
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          :headers="headers"
-          @change="handleChange"
-        >
-          <div>
-            <loading-outlined v-if="loading"></loading-outlined>
-            <plus-outlined v-else></plus-outlined>
-          </div>
-        </a-upload>
-      </a-form-item>
-      <a-form-item name="e" label="备注">
-        <a-textarea
-          v-model:value="formState.e"
-          placeholder="请填写备注说明"
-          auto-size
-          style="width: 100%"
-        />
-      </a-form-item>
-    </a-form>
-  </a-modal>
-
-  <!--  销售合同 编辑 -->
-  <a-modal
-    v-model:visible="editModalVisible"
-    title="销售合同 编辑"
+    v-model:visible="modifyModalVisible"
+    :title="'销售合同 ' + modalType"
     width="1000px"
-    @ok="addModalSubmit"
+    @ok="modifyModalSubmit"
   >
     <template #footer>
-      <a-button key="back" @click="editModalClose">返回</a-button>
-      <a-button
-        key="submit"
-        type="primary"
-        :loading="loading"
-        @click="editModalSubmit"
+      <a-button key="back" @click="modifyModalClose">返回</a-button>
+      <a-button key="submit" type="primary" @click="modifyModalSubmit"
         >提交</a-button
       >
     </template>
     <a-form
       ref="formRef"
-      :model="formState"
+      name="marketingContractModifyModal"
+      :model="getMarketingContractDetail"
       layout="horizontal"
-      name="form_in_modal"
+      :rules="rules"
       :label-col="labelCol"
       :wrapper-col="wrapperCol"
     >
       <a-row :gutter="[24, 8]">
         <a-col :span="12">
-          <a-form-item name="a" label="工地编号">
-            <a-input v-model:value="formState.c" />
+          <a-form-item name="projectcode" label="工地编号">
+            <a-input v-model:value="getMarketingContractDetail.projectcode" />
           </a-form-item>
-          <a-form-item name="b" label="工地项目名称">
-            <a-input v-model:value="formState.c" />
+          <a-form-item name="projectname" label="工地项目名称">
+            <a-input v-model:value="getMarketingContractDetail.projectname" />
           </a-form-item>
-          <a-form-item name="c" label="联系人">
-            <a-input v-model:value="formState.c" />
+          <a-form-item name="projectlinkman" label="联系人">
+            <a-input
+              v-model:value="getMarketingContractDetail.projectlinkman"
+            />
           </a-form-item>
-          <a-form-item name="c" label="状态">
+          <a-form-item name="contractstatus" label="合同状态">
             <a-select
               ref="select"
-              v-model:value="formState.a"
-              @focus="focus"
-              @change="handleChange"
+              v-model:value="getMarketingContractDetail.contractstatus"
             >
-              <a-select-option value="a">已签</a-select-option>
-              <a-select-option value="b">未签</a-select-option>
+              <a-select-option
+                v-for="item in marketingContractStatusList"
+                :key="item.key"
+                :value="item.key"
+                >{{ item.label }}</a-select-option
+              >
             </a-select>
           </a-form-item>
-          <a-form-item name="c" label="回访状态">
+          <a-form-item name="returnstatus" label="回访状态">
             <a-select
               ref="select"
-              v-model:value="formState.a"
-              @focus="focus"
-              @change="handleChange"
+              v-model:value="getMarketingContractDetail.returnstatus"
             >
-              <a-select-option value="a">已回访</a-select-option>
-              <a-select-option value="b">待回访</a-select-option>
+              <a-select-option
+                v-for="item in marketingContractReturnStatusList"
+                :key="item.key"
+                :value="item.key"
+                >{{ item.label }}</a-select-option
+              >
             </a-select>
           </a-form-item>
-          <a-form-item name="c" label="客户分类">
+          <a-form-item name="customcategoryid" label="客户分类">
             <a-select
               ref="select"
-              v-model:value="formState.a"
-              @focus="focus"
-              @change="handleChange"
+              v-model:value="getMarketingContractDetail.customcategoryid"
             >
-              <a-select-option value="a">代理商</a-select-option>
-              <a-select-option value="b">普通客户</a-select-option>
-              <a-select-option value="b">供应商</a-select-option>
+              <a-select-option
+                v-for="item in getCustomerClassficationList"
+                :key="item.id"
+                :value="item.id"
+                >{{ item.categoryname }}</a-select-option
+              >
             </a-select>
           </a-form-item>
-          <a-form-item name="c" label="代理商结算日期">
-            <a-date-picker v-model:value="formState.e" style="width: 100%" />
+          <a-form-item name="settlementdate" label="代理商结算日期">
+            <a-date-picker
+              v-model:value="getMarketingContractDetail.settlementdate"
+              style="width: 100%"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+            />
           </a-form-item>
         </a-col>
         <a-col :span="12">
-          <a-form-item name="a" label="合同签定方">
-            <a-input v-model:value="formState.c" />
+          <a-form-item name="contractparty" label="合同签定方">
+            <a-input v-model:value="getMarketingContractDetail.contractparty" />
           </a-form-item>
-          <a-form-item name="b" label="地址">
-            <a-input v-model:value="formState.c" />
+          <a-form-item name="projectaddress" label="地址">
+            <a-input
+              v-model:value="getMarketingContractDetail.projectaddress"
+            />
           </a-form-item>
-          <a-form-item name="c" label="签订日期">
-            <a-date-picker v-model:value="formState.e" style="width: 100%" />
+          <a-form-item name="contractdate" label="签订日期">
+            <a-date-picker
+              v-model:value="getMarketingContractDetail.contractdate"
+              style="width: 100%"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+            />
           </a-form-item>
-          <a-form-item name="c" label="开票状态">
+          <a-form-item name="billingstatus" label="开票状态">
             <a-select
               ref="select"
-              v-model:value="formState.a"
-              @focus="focus"
-              @change="handleChange"
+              v-model:value="getMarketingContractDetail.billingstatus"
             >
-              <a-select-option value="a">已开票</a-select-option>
-              <a-select-option value="b">未开票</a-select-option>
-              <a-select-option value="b">开票中</a-select-option>
+              <a-select-option
+                v-for="item in invoiceStatusList"
+                :key="item.key"
+                :value="item.key"
+                >{{ item.label }}</a-select-option
+              >
             </a-select>
           </a-form-item>
-          <a-form-item name="c" label="数量">
-            <a-input v-model:value="formState.c" />
+          <a-form-item name="contractamount" label="合同金额">
+            <a-input
+              v-model:value="getMarketingContractDetail.contractamount"
+            />
           </a-form-item>
-          <a-form-item name="c" label="设备等级">
-            <a-select
-              ref="select"
-              v-model:value="formState.a"
-              @focus="focus"
-              @change="handleChange"
-            >
-              <a-select-option value="a">A</a-select-option>
-              <a-select-option value="b">B</a-select-option>
-              <a-select-option value="b">C</a-select-option>
-            </a-select>
+          <a-form-item name="settlementamount" label="代理商结算金额">
+            <a-input
+              v-model:value="getMarketingContractDetail.settlementamount"
+            />
           </a-form-item>
-          <a-form-item name="c" label="代理商结算金额">
-            <a-input v-model:value="formState.c" />
-          </a-form-item>
-        </a-col>
-        <a-col :span="24">
-          <a-form-item name="c" label="备注">
+          <a-form-item name="remark" label="备注">
             <a-textarea
-              v-model:value="formState.e"
+              v-model:value="getMarketingContractDetail.remark"
               placeholder="填写备注"
               auto-size
             />
+          </a-form-item>
+        </a-col>
+        <a-col :span="24">
+          <a-divider orientation="left">设备列表</a-divider>
+          <a-row
+            type="flex"
+            style="
+              margin-bottom: 8px;
+              text-align: center;
+              background: #fafafa;
+              border-bottom: 1px solid #f0f0f0;
+              height: 50px;
+              align-items: center;
+            "
+          >
+            <a-col :span="4" :order="1">产品类别</a-col>
+            <a-col :span="6" :order="2">设备类别</a-col>
+            <a-col :span="6" :order="3">设备数量</a-col>
+            <a-col :span="3" :order="4">设备等级</a-col>
+            <a-col :span="3" :order="5">租买方式</a-col>
+            <a-col :span="2" :order="6">操作</a-col>
+          </a-row>
+          <a-row
+            type="flex"
+            v-for="(
+              deviceItem, index
+            ) in getMarketingContractDetail.salesdevices"
+            :key="deviceItem.id"
+            style="text-align: center"
+          >
+            <a-col :span="4" :order="1">
+              <a-form-item
+                :name="['salesdevices', index, 'devicetypeid']"
+                :rules="{
+                  required: true,
+                  message: '请选择产品分类',
+                }"
+              >
+                <a-select
+                  ref="select"
+                  v-model:value="deviceItem.devicetypeid"
+                  placeholder="请选择产品品类"
+                  style="width: 120px"
+                  @change="marketingContractDeviceTypeOnSelect"
+                >
+                  <a-select-option
+                    v-for="productTypeItem in getProductTypeList"
+                    :key="productTypeItem.id"
+                    :value="parseInt(productTypeItem.id)"
+                    >{{ productTypeItem.typename }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :span="6" :order="2">
+              <a-form-item
+                :name="['salesdevices', index, 'deviceid']"
+                :rules="{
+                  required: true,
+                  message: '请选择设备类别',
+                }"
+              >
+                <a-select
+                  ref="select"
+                  v-model:value="deviceItem.deviceid"
+                  placeholder="请选择设备类别"
+                  style="width: 180px"
+                >
+                  <a-select-option
+                    v-for="deviceTypeItem in getDeviceTypeList[
+                      deviceItem.devicetypeid
+                    ]"
+                    :key="deviceTypeItem.deviceid"
+                    :value="deviceTypeItem.deviceid"
+                    >{{ deviceTypeItem.devicename }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :span="6" :order="3">
+              <a-form-item
+                :name="['salesdevices', index, 'devicecount']"
+                :rules="{
+                  required: true,
+                  message: '请填写设备数量',
+                }"
+              >
+                <a-input
+                  v-model:value="deviceItem.devicecount"
+                  style="width: 180px"
+                  placeholder="请填写设备数量"
+              /></a-form-item>
+            </a-col>
+            <a-col :span="3" :order="4">
+              <a-form-item
+                :name="['salesdevices', index, 'devicelevel']"
+                :rules="{
+                  required: true,
+                  message: '请选择设备等级',
+                }"
+              >
+                <a-select
+                  ref="select"
+                  v-model:value="deviceItem.devicelevel"
+                  placeholder="请选择设备等级"
+                  style="width: 80px"
+                >
+                  <a-select-option
+                    v-for="deviceLevelItem in getDeviceLevel"
+                    :key="deviceLevelItem.value"
+                    :value="deviceLevelItem.value"
+                    >{{ deviceLevelItem.text }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :span="3" :order="5">
+              <a-form-item
+                :name="['salesdevices', index, 'salestype']"
+                :rules="{
+                  required: true,
+                  message: '请选择租买方式',
+                }"
+              >
+                <a-select
+                  ref="select"
+                  v-model:value="deviceItem.salestype"
+                  placeholder="请选择租买方式"
+                  style="width: 80px"
+                >
+                  <a-select-option
+                    v-for="devicesSales in devicesSalesType"
+                    :key="devicesSales.key"
+                    :value="devicesSales.key"
+                    >{{ devicesSales.label }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :span="2" :order="6" style="padding-top: 6px">
+              <MinusCircleOutlined @click="handleRemoveDevice(deviceItem)" />
+            </a-col>
+          </a-row>
+          <a-form-item>
+            <a-button
+              type="dashed"
+              block
+              @click="handleAddDevice(getProductTypeList[0].id)"
+            >
+              <PlusOutlined />
+              添加设备
+            </a-button>
           </a-form-item>
         </a-col>
       </a-row>
@@ -233,176 +361,83 @@
 </template>
 
 <script>
-  import { defineComponent, reactive, ref, toRaw } from "vue";
+  import { defineComponent, ref } from "vue";
+  import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons-vue";
   import CONSTANT_MARKETING_CONTRACT from "../utils/constantMarketingContract";
-  import { PlusOutlined, LoadingOutlined } from "@ant-design/icons-vue";
-
-  let data = [];
-  for (let i = 0; i < 120; i++) {
-    let rowObj = { key: i };
-
-    for (let j = 0; j < 26; j++) {
-      rowObj[String.fromCharCode(97 + j)] = "占位";
-    }
-    data.push(rowObj);
-  }
+  import ACTION_TYPES from "../store/constantActionTypes";
+  import CONSTANT_DATA from "../utils/constantData";
 
   export default defineComponent({
-    data() {
-      return {
-        contractId: "",
-        data,
-        columns: CONSTANT_MARKETING_CONTRACT.TABLE_COLUMNS,
-      };
-    },
     components: {
+      MinusCircleOutlined,
       PlusOutlined,
-      LoadingOutlined,
     },
-    setup() {
+    data() {
       const formRef = ref();
-      const loading = ref(false);
-      const addModalVisible = ref(false);
-      const editModalVisible = ref(false);
-      const stockModalVisible = ref(false);
-      const fileList = ref([]);
-      const editModalFileList = ref([
-        {
-          uid: "1",
-          name: "xxxxxxxxxxxxxxxxxxx.pdf",
-          status: "done",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/xxx.png",
-        },
-        {
-          uid: "2",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.zip",
-          status: "done",
-          url: "http://www.baidu.com/yyy.png",
-        },
-        {
-          uid: "3",
-          name: "xxxxxxxxxxxxxxxxxxxxxxxxxx.png",
-          status: "error",
-          response: "Server Error 500",
-          // custom error message to show
-          url: "http://www.baidu.com/zzz.png",
-        },
-      ]);
-      const activeKey = ref(["1"]);
-
-      const formState = reactive({
-        a: [],
-        b: "",
-        c: "",
-        d: "jack",
-        e: "",
-        f: "",
-        g: "",
-        h: "",
-        i: "",
-        modifier: "public",
-      });
-
-      const showAddModal = () => {
-        addModalVisible.value = true;
-      };
-
-      const addModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              addModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const addModalClose = () => {
-        addModalVisible.value = false;
-      };
-
-      const showEditModal = () => {
-        editModalVisible.value = true;
-      };
-
-      const editModalSubmit = () => {
-        formRef.value
-          .validateFields()
-          .then(values => {
-            loading.value = true;
-            setTimeout(() => {
-              loading.value = false;
-              editModalVisible.value = false;
-            }, 2000);
-
-            console.log("Received values of form: ", values);
-            console.log("formState: ", toRaw(formState));
-            formRef.value.resetFields();
-            console.log("reset formState: ", toRaw(formState));
-          })
-          .catch(info => {
-            console.log("Validate Failed:", info);
-          });
-      };
-
-      const editModalClose = () => {
-        editModalVisible.value = false;
-      };
-
-      const stockModalShow = () => {
-        console.log("123123123");
-        stockModalVisible.value = true;
-      };
-
-      const stockModalClose = () => {
-        stockModalVisible.value = false;
-      };
-
-      const handleChange = value => {
-        console.log(`selected ${value}`);
-      };
-
-      const focus = () => {
-        console.log("focus");
-      };
+      const modifyModalVisible = ref(false);
+      const selectedRowKeys = ref([]);
 
       return {
-        loading,
-        addModalVisible,
-        editModalVisible,
-        stockModalVisible,
-        formState,
         formRef,
+        modifyModalVisible,
         labelCol: { style: { width: "180px", textAlign: "right" } },
         wrapperCol: { span: 24 },
-        fileList,
-        headers: {
-          authorization: "authorization-text",
+        rules: {
+          projectcode: {
+            required: true,
+            message: "工地编号为必填项",
+          },
+          projectname: {
+            required: true,
+            message: "工地项目名称为必填项",
+          },
+          projectlinkman: {
+            required: true,
+            message: "联系人为必填项",
+          },
+          contractstatus: {
+            required: true,
+            message: "合同状态为必选项",
+          },
+          projectaddress: {
+            required: true,
+            message: "地址为必填项",
+          },
+          devicecount: {
+            required: true,
+            message: "数量为必填项",
+          },
+          contractparty: {
+            required: true,
+            message: "合同签定方为必填项",
+          },
+          contractdate: {
+            required: true,
+            message: "合同签订日期为必填项",
+          },
+          contractamount: {
+            required: true,
+            message: "合同金额为必填项",
+          },
+          billingstatus: {
+            required: true,
+            message: "合同状态为必选项",
+          },
+          returnstatus: {
+            required: true,
+            message: "合同回访状态为必选项",
+          },
         },
-        editModalFileList,
-        activeKey,
-        showAddModal,
-        addModalSubmit,
-        addModalClose,
-        showEditModal,
-        editModalSubmit,
-        editModalClose,
-        stockModalShow,
-        stockModalClose,
-        handleChange,
-        focus,
+        modalType: "",
+        defaultPageSize: CONSTANT_MARKETING_CONTRACT.TABLE_SHOW_SIZE,
+        pageSizeOptions: CONSTANT_MARKETING_CONTRACT.TABLE_SHOW_SIZE_ARRAY,
+        columns: CONSTANT_MARKETING_CONTRACT.TABLE_COLUMNS,
+        marketingContractStatusList: CONSTANT_DATA.MARKETING_CONTRACT_STATUS,
+        marketingContractReturnStatusList:
+          CONSTANT_DATA.MARKETING_CONTRACT_RETURN_STATUS,
+        invoiceStatusList: CONSTANT_DATA.INVOICE_STATUS,
+        devicesSalesType: CONSTANT_DATA.DEVICES_SALES_TYPE,
+        selectedRowKeys,
       };
     },
     computed: {
@@ -416,42 +451,198 @@
           40
         );
       },
-    },
-    methods: {
-      handleQueryMarketingContractList() {
-        //
+      getMarketingContractListTableDatas() {
+        return this.$store.state.moduleMarketingContract.tableData;
+      },
+      getMarketingContractDetail() {
+        return this.$store.state.moduleMarketingContract
+          .marketingContractDetail;
+      },
+      getCustomerClassficationList() {
+        return this.$store.state.moduleMarketingContract.customerClassification;
+      },
+      getDeviceLevel() {
+        return this.$store.state.moduleGlobal.deviceLevelList;
+      },
+      getProductTypeList() {
+        return this.$store.state.moduleGlobal.productTypeList;
+      },
+      getDeviceTypeList() {
+        return this.$store.state.moduleMarketingContract
+          .deviceTypeListWithProductType;
       },
     },
-    mounted(){
+    methods: {
+      handleQueryMarketingContractList(currentPage, showPageSize) {
+        currentPage = currentPage
+          ? currentPage
+          : this.$store.state.moduleMarketingContract.tableData.activePage;
+        showPageSize = showPageSize
+          ? showPageSize
+          : CONSTANT_MARKETING_CONTRACT.TABLE_SHOW_SIZE;
+
+        this.$store.dispatch(ACTION_TYPES.MARKETING_CONTRACT_LIST_QUERY, {
+          actionFailure: this.actionFailure,
+          currentPage,
+          showPageSize,
+        });
+      },
+      actionFailure(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_SPINNING_HIDE);
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+          message: "销售合同" + this.modalType,
+          description: description,
+        });
+      },
+      actionSuccess(description) {
+        this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+          type: CONSTANT_DATA.NOTIFICATION_TYPES.SUCCESS,
+          message: "销售合同" + this.modalType,
+          description: description,
+        });
+      },
+      modifyModalSubmit() {
+        let _this = this;
+        this.$refs.formRef
+          .validate()
+          .then(res => {
+            _this.$data.modifyModalVisible = false;
+            res.id =
+              _this.$store.state.moduleMarketingContract.marketingContractDetail.id;
+
+            _this.$store.dispatch(ACTION_TYPES.MARKETING_CONTRACT_MODIFY, {
+              ...res,
+              actionFailure: _this.actionFailure,
+              actionSuccess: _this.actionSuccess,
+              actionCallback: _this.handleQueryMarketingContractList,
+            });
+          })
+          .catch(({ errorFields }) => {
+            if (errorFields && errorFields.length > 0) {
+              let description = errorFields[0].errors[0];
+              _this.$store.commit(ACTION_TYPES.GLOBAL_NOTIFICATION_SHOW, {
+                type: CONSTANT_DATA.NOTIFICATION_TYPES.ERROR,
+                message: "验证错误",
+                description: description,
+              });
+            }
+          });
+      },
+      modifyModalShow(id, name) {
+        let _this = this;
+        this.$data.modifyModalVisible = true;
+
+        if (name && name.length > 0) {
+          this.$data.modalType = "编辑";
+
+          // 查询合同详情
+          this.handleQueryMarketingContractDetail(id);
+        } else {
+          this.$store.commit(ACTION_TYPES.MARKETING_CONTRACT_DETAIL_CLEAR);
+          this.$data.modalType = "新增";
+          setTimeout(() => {
+            _this.$refs.formRef.resetFields();
+          });
+        }
+      },
+      modifyModalClose() {
+        this.modifyModalVisible = false;
+      },
+      handleQueryCustomerClassificationList() {
+        this.$store.dispatch(
+          ACTION_TYPES.MARKETING_CONTRACT_CUSTOMER_CLASSIFICATION_LIST
+        );
+      },
+      handleQueryDeviceLevelList() {
+        this.$store.dispatch(ACTION_TYPES.GLOBAL_DICTS_BY_TYPE_ID, {
+          typeid: CONSTANT_DATA.DICT_TYPE_ID_LIST.DEVICE_LEVEL.key,
+        });
+      },
+      handleQueryProductTypeList() {
+        let _this = this;
+        this.$store.dispatch(ACTION_TYPES.GLOBAL_PRODUCT_TYPE_LIST, {
+          actionCallback: this.handleQueryDeviceTypeList,
+          actionFailure: _this.actionFailure,
+          actionSuccess: _this.actionSuccess,
+        });
+      },
+      handleQueryDeviceTypeList(typeid) {
+        let _this = this;
+        this.$store.dispatch(ACTION_TYPES.MARKETING_CONTRACT_DEVICE_TYPE_LIST, {
+          typeid,
+          actionFailure: _this.actionFailure,
+          actionSuccess: _this.actionSuccess,
+        });
+      },
+      handleAddDevice(deviceTypeId) {
+        this.$store.commit(
+          ACTION_TYPES.MARKETING_CONTRACT_DETAIL_SALESDEVICES_ADD,
+          deviceTypeId
+        );
+      },
+      handleRemoveDevice(deviceItem) {
+        this.$store.commit(
+          ACTION_TYPES.MARKETING_CONTRACT_DETAIL_SALESDEVICES_REMOVE,
+          deviceItem.id
+        );
+      },
+      handleQueryMarketingContractDetail(id) {
+        this.$store.dispatch(ACTION_TYPES.MARKETING_CONTRACT_DETAIL_QUERY, id);
+      },
+      marketingContractTableRowDelete(id) {
+        let _this = this;
+        this.$store.dispatch(ACTION_TYPES.MARKETING_CONTRACT_DELETE, {
+          id,
+          actionCallback: _this.handleQueryMarketingContractList,
+          actionFailure: _this.actionFailure,
+          actionSuccess: _this.actionSuccess,
+        });
+      },
+      marketingContractDeviceTypeOnSelect(devicetypeid) {
+        this.handleQueryDeviceTypeList(devicetypeid);
+      },
+      marketingContractTableRowOnChange(selectedRowKeys) {
+        this.$data.selectedRowKeys = selectedRowKeys;
+      },
+      marketingContractInvoiceApply() {
+        let _this = this;
+        this.$store.dispatch(ACTION_TYPES.MARKETING_CONTRACT_INVOICE_APPLY, {
+          salescontracts: this.$data.selectedRowKeys,
+          actionFailure: _this.actionFailure,
+          actionSuccess: _this.actionSuccess,
+          actionCallback: _this.handleQueryMarketingContractList,
+        });
+      },
+    },
+    mounted() {
       // 销售合同列表初始化
       this.handleQueryMarketingContractList();
-    }
+
+      // 客户分类列表初始化
+      this.handleQueryCustomerClassificationList();
+
+      // 设备等级列表初始化
+      if (
+        this.$store.state.moduleGlobal.deviceLevelList &&
+        this.$store.state.moduleGlobal.deviceLevelList.length === 0
+      ) {
+        this.handleQueryDeviceLevelList();
+      }
+
+      // 产品类别列表初始化
+      if (
+        this.$store.state.moduleGlobal.productTypeList &&
+        this.$store.state.moduleGlobal.productTypeList.length === 0
+      ) {
+        this.handleQueryProductTypeList();
+      }
+    },
   });
 </script>
 
 <style scoped>
   .demo-page-header :deep(tr:last-child td) {
     padding-bottom: 0;
-  }
-</style>
-<style>
-  .avatar-uploader > .ant-upload {
-    width: 128px;
-    height: 128px;
-  }
-  .ant-upload-select-picture-card i {
-    font-size: 32px;
-    color: #999;
-  }
-
-  .ant-upload-select-picture-card .ant-upload-text {
-    margin-top: 8px;
-    color: #666;
-  }
-
-  .edit_modal_filelist {
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    padding: 0 6px 10px;
   }
 </style>

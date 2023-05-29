@@ -5,7 +5,7 @@
 <script>
   import { defineComponent } from "vue";
   import { notification } from "ant-design-vue";
-  import CONSTANT_DATA from "../utils/contantData";
+  import CONSTANT_DATA from "../utils/constantData";
 
   export default defineComponent({
     name: "commonCompNotification",

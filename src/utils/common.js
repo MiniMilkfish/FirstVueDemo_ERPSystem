@@ -71,9 +71,9 @@ export function fetchPost_FormData(url, body = {}, callback, extra, isFullRes) {
     ).then(
         response => checkFetchStatus(response)
     ).then(json => {
-        handlerFetchResponse(url, null, json, extra, isFullRes, callback);
+        handlerFetchResponse(url, json, extra, isFullRes, callback);
     }).catch(error => {
-        handlerFetchError(url, null, error, extra);
+        handlerFetchError(url, error, extra);
     });
 }
 
@@ -162,8 +162,8 @@ function handlerFetchResponse(_url, json, extra, isFullRes, callback) {
             callback(isFullRes? json: json.data);	                //成功的回调函数
 
             if (extra.actionSuccess !== void 0 && extra.route !== void 0) {
-                //操作成功，页面跳转
-                console.log('handlerFetchResponse: ', '操作成功，页面跳转')
+                //操作成功,页面跳转
+                console.log('handlerFetchResponse: ', '操作成功,页面跳转')
                 return true;
             }
             else if (extra.actionSuccess !== void 0) {
@@ -172,7 +172,7 @@ function handlerFetchResponse(_url, json, extra, isFullRes, callback) {
                 return true;
             }
             else {
-                // -仅作为数据展示，除非协议统一做预处理
+                // -仅作为数据展示,除非协议统一做预处理
                 return true;
             }
         } else {
@@ -194,7 +194,7 @@ function handlerFetchResponse(_url, json, extra, isFullRes, callback) {
 function handlerFetchError(url, error, extra) {
     console.log('handlerFetchError: ', url, error, extra)
     // if (extra.actionFailure) {
-    // dispatch(extra.actionFailure(error.msg + '. 多半是GM服务端没开，抓紧的……'));
+    // dispatch(extra.actionFailure(error.msg + '. 多半是GM服务端没开,抓紧的……'));
 
     // dispatch({ type: ACTION_TYPE.MASTER_NO_CHANGE });
     // }
@@ -264,7 +264,7 @@ export function jsonParse(str) {
  * 		g  8位时间格式 20151010
  *      h  2015-10-10
  *      u  ISO 时间格式 2018-04-08T02:43:12.511Z
- *      ff 小时：分钟， 示例：10:10
+ *      ff 小时：分钟, 示例：10:10
  *      默认格式为标准格式
  * @param {String} [date] 10、13位时间戳、UTC时间、ISO时间
  * */
